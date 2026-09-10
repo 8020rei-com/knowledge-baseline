@@ -1,0 +1,2261 @@
+/* ============================================================================
+   @8020rei-com/tokens — the 8020IQ design system's token layer.
+
+   ONE import gives an app the whole identity: the palette, both themes, the
+   three brands, the type ramp, the spacing scale, the two radii, the shadows,
+   the textures, and the bridge that maps all of it onto the shadcn names every
+   component already speaks.
+
+   Usage, in the app's own stylesheet:
+
+       @import "tailwindcss";
+       @import "@8020rei-com/tokens";
+
+   That one package import includes the two self-hosted font families, Inter
+   and JetBrains Mono. The build keeps their four woff2 files beside the emitted
+   CSS, so a consumer has no second import or public-directory copy step to
+   forget. There is no third family and no remote one: DM Sans was retired on
+   2026-08-30 with its two woff2 files, and a reader who counts three here and
+   finds two in the package concludes a face failed to ship and goes looking for
+   it, which is how an optional or remote brand font gets added back.
+
+   Then set two attributes on <html>:  data-brand="iq|rei|roof"  data-theme="light|dark".
+
+   TAILWIND v4 NOTE: this file carries a `@theme inline` block, so it must be
+   imported INTO the stylesheet Tailwind processes — not linked separately.
+   ============================================================================ */
+
+/* 8020IQ — the two brand faces, self-hosted.
+   This file is part of the main token import: fonts are identity, not an
+   optional enhancement. In source, the four URLs resolve against `../fonts/`.
+   The package build copies those files beside the emitted CSS and rewrites the
+   URLs to `./fonts/`, which lets the consumer's bundler own and serve them. A
+   CDN link would make the page depend on a third party to render its identity. */
+
+/* ── The brand faces, self-hosted ────────────────────────────────────────────
+   ONE family: Inter, for every role from the 64px hero to the 11px eyebrow.
+   JetBrains Mono is not a second voice — it is reserved for identifiers (an
+   API token, an invoice number, a stack frame, a code span) and is the only
+   place a reader should ever see it. DM Sans was retired on 2026-08-30 with
+   its two woff2 files; `typography.css` carries that argument.
+
+   Both are shipped as woff2 in the package rather than fetched from Google at
+   runtime — `next/font/google` performs a network fetch during `next build`,
+   and a CDN link makes the page depend on a third party to render its own
+   identity. `swap` paints the fallback immediately.                          */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/inter-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("./fonts/jetbrains-mono-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ============================================================
+   COLOR — base values
+   Section 06 and 06b of the 8020IQ Brand Guide v1.1, and — since 6.1.0 —
+   the Radix Slate dark scale in place of the guide's titanium ramp.
+   Every color has a job. Semantic aliases live in themes.css.
+   ============================================================ */
+:root {
+  /* --- Parent accent: emerald. Section 06a. --- */
+  --color-emerald: #10B981;        /* primary CTAs, success, parent emphasis */
+  --color-emerald-dark: #059669;   /* hover, links on cream, eyebrows */
+  --color-emerald-light: #34D399;  /* tints, dark-mode accent text, progress */
+
+  /* --- Vertical accents. One per sub-brand. Never combined. Section 06b. --- */
+  --color-sky: #0495FE;            /* 8020REI only */
+  --color-orange: #FF6723;         /* 8020Roof only */
+
+  /* --- The spine. Cream and warm whites. --- */
+  --color-cream: #FAF8F5;          /* master light background */
+  --color-warm-white: #F5F3EF;     /* cards on cream, inputs, alt table rows */
+
+  /* --- THE DARK RAMP IS RADIX SLATE. Brand-owner decision, 2026-09-08. ---------
+
+     The guide's dark ramp was four hand-picked greys — charcoal #18181B and
+     three titaniums — plus white alphas at whatever percentage a job needed.
+     Radix Slate's dark scale is twelve steps drawn as ONE ladder, with a role
+     per step, and its step 2 is #18191B: one digit from the guide's charcoal.
+     So the tone is the guide's; only the steps are Radix's. Values were read
+     from `@radix-ui/colors@3.0.0` (`slate-dark.css`, `slate-dark-alpha.css`)
+     on 2026-09-08, not recalled.
+
+     ONLY THE STEPS WITH A JOB ARE DECLARED. Step 4 (#272A2D, a hovered fill)
+     and step 8 (#5A6169, a strong border) are Radix's, and nothing here paints
+     either: the system's hover is a brand wash, and 8 measures 2.81:1 on the
+     page and 2.54 on the card, under the 3:1 floor an input edge is held to.
+     Add them from the scale when a job appears; do not invent a value between.
+
+     Every ratio is WCAG relative luminance against the step named. */
+  --color-slate-1: #111113;        /* the sunken floor: sidebar rail, fade stop */
+  --color-slate-2: #18191B;        /* the page */
+  --color-slate-3: #212225;        /* card, popover, row — 1.11:1 off the page */
+  --color-slate-5: #2E3135;        /* muted, secondary, header band, track —
+                                      1.22 off the card, 1.35 off the page */
+  --color-slate-6: #363A3F;        /* selected row, skeleton pulse — 1.39 on card */
+  --color-slate-7: #43484E;        /* strong border, skeleton at rest — 1.72 on
+                                      the card, 1.91 against the page */
+  --color-slate-9: #696E77;        /* input edge — 3.43 page · 3.10 card */
+  --color-slate-10: #777B84;       /* helper text — 4.15 page · 3.75 card · 3.08
+                                      on the header band; the 3:1 label floor */
+  --color-slate-11: #B0B4BA;       /* secondary text — 8.45 page · 7.64 card ·
+                                      6.28 on muted */
+  --color-slate-12: #EDEEF0;       /* primary text — 15.15 page · 13.70 card */
+
+  /* Slate's alphas, for the lines that must keep reading over a hover wash or a
+     selected row. Composited over the card (#212225): */
+  --color-slate-a2: #d8f4f609;     /* chrome bar — 3.5%, the old 4% white */
+  --color-slate-a4: #d3edf81d;     /* card divider, overlay ring — #35393D, 1.37:1 */
+  --color-slate-a6: #d6ebfd30;     /* card EDGE, scrollbar thumb — #43484E, which
+                                      is slate-7 exactly: 1.72 on the card, 1.91
+                                      against the page */
+  --color-slate-a8: #d9edff5d;     /* scrollbar thumb, hover — 3.02 on the page */
+
+  /* --- The 6.0.0 dark names, kept as ALIASES. -----------------------------------
+     Removing a public token is a major (CHANGELOG, first paragraph), so the
+     five names a consumer may still paint resolve to the step that took each
+     job. The theme reads the slate steps directly; nothing in this package
+     reads these. Retire them in 7.0.0. */
+  --color-charcoal: var(--color-slate-2);        /* was #18181B */
+  --color-charcoal-deep: var(--color-slate-1);   /* was #0F0F11 */
+  --color-titanium: var(--color-slate-3);        /* was #2C2C2E */
+  --color-titanium-mid: var(--color-slate-5);    /* was #3A3A3C */
+  --color-titanium-light: var(--color-slate-7);  /* was #48484A */
+
+  /* --- Light-mode grays. iOS-style. Never pure black. --- */
+  --color-gray-1: #1C1C1E;         /* text primary on cream */
+  --color-gray-2: #636366;         /* text secondary */
+  --color-gray-3: #8E8E93;         /* text tertiary, disabled, hint */
+  --color-border-hairline: #E8E4DE;/* default divider on cream */
+  --color-border-heavy: #DDD7CE;   /* stronger divider, table outline */
+
+  /* --- White alphas for dark surfaces. Never pure #FFF as a surface. -----------
+     NO THEME TOKEN READS THESE SINCE 6.1.0. Dark dividers, edges, text and the
+     scrollbar all resolve slate steps and slate alphas above. The six stay
+     declared because a public token that goes away is a major and a consumer
+     may still paint one; the job each used to hold is kept beside it so the
+     7.0.0 retirement knows what it is removing. */
+  --color-white-8: rgba(255, 255, 255, 0.08);   /* was the card divider */
+  --color-white-14: rgba(255, 255, 255, 0.14);  /* was the card edge */
+  /* NEVER TEXT: white at 25% on the page measures 2.27:1, under every text
+     floor there is. A hairline and scrim value, where nothing has to be legible
+     through it — the reader who followed an older comment naming it "secondary
+     text" shipped unreadable ink with the token layer's own word for it. */
+  --color-white-25: rgba(255, 255, 255, 0.25);  /* hairlines and scrims on dark */
+  --color-white-40: rgba(255, 255, 255, 0.40);  /* was helper text, caps labels */
+  --color-white-60: rgba(255, 255, 255, 0.60);  /* was secondary text */
+  --color-white-65: rgba(255, 255, 255, 0.65);  /* mono addresses on dark */
+
+  /* --- macOS chrome traffic lights. Section 12a. Always full colour. --- */
+  --color-traffic-red: #FF5F57;
+  --color-traffic-yellow: #FEBC2E;
+  --color-traffic-green: #28C840;
+
+  /* --- Danger. The guide calls for a "danger red" variant on do-not callouts
+         and comparison X-marks but does not publish a separate hue. The system
+         deliberately aliases it to the canonical traffic red.
+
+         "Aliases" was PROSE and the value was a second copy of #FF5F57 until
+         6 Sep 2026. The two agreed only because nobody had moved the traffic
+         light: an edit to --color-traffic-red would have left two reds three
+         lines apart with a comment claiming they are one colour, and the
+         comment was the only thing that said they were related at all. It
+         reads the token now, so the alias is the declaration rather than a
+         promise about it. Nothing downstream sees a change — a custom property
+         is substituted at computed-value time, so every reader still resolves
+         #FF5F57. --- */
+  --color-danger: var(--color-traffic-red);
+
+  /* --- Accent RGB triplets, for glows and tints built with rgba(). --- */
+  --rgb-emerald: 16, 185, 129;
+  --rgb-sky: 4, 149, 254;
+  --rgb-orange: 255, 103, 35;
+}
+
+/* ============================================================
+   TYPE — one family, section 08.
+   Inter for everything. JetBrains Mono for identifiers, and only there.
+
+   IT WAS THREE FAMILIES UNTIL 2026-08-30, and the argument that closed it is
+   worth keeping, because each of the two retirements was defended once.
+
+   DM SANS was the display face — hero, h2, h3, stat numerals. Three families
+   means three font loads, three sets of decisions, and three ways for the same
+   number to look different across screens. A display face earns its keep on a
+   headline and loses it everywhere else: the wide, rounded letterforms that
+   carry a 64px hero are the same ones whose counters close up in dense data.
+   Inter carries the hero at 800 and the caption at 400 without changing its
+   mind about what a digit looks like.
+
+   MONO WAS THE DATA VOICE, and that is the one that actually cost us. It was
+   doing two jobs on the same page — the documentation voice AND the figures —
+   so a reader could not tell whether mono meant "note about this" or "number".
+   It also rendered the figures LIGHTER AND GREYER than the sans labels beside
+   them, which is backwards for a table whose whole job is its numbers. And
+   JetBrains Mono's zero reads as a capital O, the one ambiguity a data font
+   cannot afford.
+
+   The alignment mono was there for is not mono's to give. `tabular-nums` is,
+   and Inter has it. Every figure in the system already asked for both; only
+   one of them was doing the work.
+
+   Never more than three weights on one screen.
+   Never mono for anything that is not an identifier.
+   ============================================================ */
+:root {
+  /* ONE family, and therefore one token. There is no `--font-display` any
+     more: a display token whose value equals the body token is a name that
+     invites a second face back in. The hero is a SIZE and a WEIGHT, which the
+     scale below already carries. */
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+
+  /* IDENTIFIERS ONLY: an API token, an invoice number, a card's last four, a
+     stack frame, a hex value, a code span, the word you type to confirm. Never
+     a figure, never a label, never an eyebrow. A number the reader compares
+     against the number below it is data, not an identifier, and it is Inter.
+
+     IT IS NAMED FOR THE JOB, NOT THE SHAPE, and that is load-bearing twice.
+     It tells a call site the test to apply — "is this an identifier?" — where
+     `--font-mono` only told it what the answer would look like. And it lets
+     the Tailwind bridge say `--font-mono: var(--font-identifier)` instead of
+     `--font-mono: var(--font-mono)`, which is the self-reference the bridge
+     spends thirty lines warning against and then committed twice. That one
+     survived only because this file is unlayered and unlayered CSS beats
+     `@layer theme` — an accident, not a design, and one import-order change
+     away from every face on every screen falling back to system sans.
+
+     THE TEST, SINCE THE LIST ABOVE KEEPS GETTING READ AS EXAMPLES OF A LOOK:
+     an identifier is a string a reader MATCHES, not one they read. The face
+     earns its keep on character-level difference — is that a 1 or an l, did
+     the id end 8B or 88 — and a string with no character-level difference to
+     show has no use for it. Four things failed that test on 2026-09-02 and
+     each had been sitting in mono unargued: a POSTAL ADDRESS in a table cell
+     (prose, and the standardized pair the mail is aimed at is read as an
+     address, not matched as a token); the WIRE'S STATUS WORD printed beside
+     its translated pill (an English word the reader reads; the direct-mail
+     module had it in three voices at once); a ZIP CODE (a figure — the same
+     file set two other ZIPs in `tabular-nums` and got them right); and the
+     PRESS COPY on a drawn cheque and envelope — DATE, PAY TO THE ORDER OF,
+     DOLLARS, MEMO — which is a label wearing paper's clothes.
+
+     The Tailwind utility is `font-mono`, because the bridge must keep the
+     framework's name. The registry's own name for it is
+     `typography.identifier` in `registry/lib/design-tokens.ts`, which is where
+     a TSX call site should make this claim so that it can be read as one. */
+  --font-identifier: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Weights actually used by the system */
+  --weight-body: 400;
+  --weight-medium: 500;
+  --weight-emphasis: 600;
+  --weight-bold: 700;
+  --weight-display: 800;
+
+  /* --- Role scale. Section 08 hierarchy table. --- */
+  --type-hero-size: 64px;      /* Inter 800, spec range 56 to 72px */
+  --type-hero-lh: 1.04;
+  --type-h2-size: 40px;        /* Inter 700, spec range 36 to 44px */
+  --type-h2-lh: 1.1;
+  --type-h3-size: 26px;        /* Inter 600, spec range 24 to 28px */
+  --type-h3-lh: 1.25;
+  --type-body-size: 17px;      /* Inter 400, spec range 16 to 18px */
+  --type-body-lh: 1.62;
+  --type-body-sm-size: 15px;
+  --type-caption-size: 13px;   /* Inter 500, spec range 12 to 14px */
+  --type-caption-lh: 1.45;
+  --type-data-size: 14px;      /* Inter 500 tabular, spec range 12 to 16px */
+  --type-eyebrow-size: 11px;   /* caps eyebrow, the system's label voice */
+
+  /* --- Display numerals. The stat-tile voice, section 11 pattern 01. --- */
+  --type-stat-size: 56px;
+  --type-stat-lh: 1.0;
+  --type-score-size: 64px;     /* the "98" predictive-score numeral */
+
+  /* --- Tracking --- */
+  --tracking-display: -0.02em; /* tighten large Inter */
+  --tracking-hero: -0.03em;
+  --tracking-label-caps: 0.08em;/* canonical eyebrow / chrome-label tracking */
+  /* The SECTION tier's tightening, and it had no name until 5 Sep 2026 — which
+     is why the tier ended up with two of them. `typography.section`,
+     `subheading` and `sectionTitle` all wrote the literal `-0.01em`, while
+     eleven call sites reached for Tailwind's own `tracking-tight` (-0.025em)
+     on the same `text-section`. One tier, two trackings, and no page showing
+     both. `booking-page.tsx` found and argued it in one file; nothing could
+     find the other eleven, because a value with no name cannot be grepped. */
+  --tracking-section: -0.01em;
+  --tracking-body: 0;
+}
+
+/* ============================================================
+   SPACE, RADIUS, SHADOW, LAYOUT — section 10.
+   Spacing is multiples of 4. Default rhythm 8 / 16 / 24 / 48 / 96.
+   ============================================================ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* --- Radius. Element-specific, not a free scale. ---
+     THESE ARE THE BRAND GUIDE'S LADDER, NOT THIS KIT'S ELEMENT MAP, and the
+     two are different on purpose. `docs/03-icons-spacing-radius-shadow.md:80`
+     is the authority on what a given element wears, and it resolves to
+     Tailwind's own `rounded-md` (6px) for a button, input, select, menu item
+     and rail row, and `rounded-lg` (8px) for a card, panel, alert and popover.
+     The names below are the SECOND step — the brand scale — reached by an
+     explicit `var()` where the doc's table calls for one: a card at 16px when
+     it is a tile you click, an icon chip at 10px.
+
+     SO SOME OF THESE HAVE NO CONSUMER IN THIS REPOSITORY AND THAT IS CORRECT.
+     `--radius-button` (12px) names no element in the doc's table; a button here
+     is 6px. `--radius-chrome` draws a surface this kit does not have. They ship
+     because the token package is the brand's, not this app's, and a consumer
+     building a chrome window needs the number. Do not "clean them up": deleting
+     a published token breaks every consumer that reads it, and the two audits
+     that have now filed this as drift were both reading the token file without
+     the doc beside it. (2026-08-25, the second of those two.) */
+  --border-radius-16: 16px;
+  --radius-button: 12px;   /* brand ladder; a button in THIS kit is rounded-md, 6px */
+  --radius-input: 10px;
+  --radius-chrome: 10px;   /* chrome-window top corners, section 12b — no consumer here */
+  --border-radius-08: 8px;     /* score badge / status tile */
+  /* 9999px, where Carbon's `$border-radius-max` is 999999px. The two rungs
+     beside this one took Carbon's NAME and its VALUE — 8px and 16px match
+     exactly — and this one took the name only. It is not an oversight and it is
+     not worth a value change in a published cut: both numbers exceed half the
+     height of anything this system draws, so both resolve to the same pill on
+     every element, and `docs/27` records the row as "exact in intent" rather
+     than exact. A token value that moves for cosmetic parity with a spec is a
+     breaking change bought with nothing. */
+  --border-radius-max: 9999px;
+
+  /* --- Shadow. Soft and warm. Never hard gray-blue. --- */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04);
+/* THE SAME SHAPE, DEEPER, FOR CHARCOAL. A 4%-black shadow is invisible on
+   #18181B — there is no lighter ground for it to darken — so dark mode had
+   `--card-shadow: none` and every card sat on the page with nothing but an 8%
+   hairline between them. One luminance step and a hairline is not elevation,
+   and the screens read flat (Ignacio, 22 Aug 2026: "muy plano en darkmode").
+   Dark UIs still cast shadows; they need a deeper alpha because the ground is
+   already near-black. Same two-layer structure as the light card so the two
+   themes describe one object. */
+  --shadow-card-dark: 0 1px 2px rgba(0, 0, 0, 0.44), 0 2px 10px rgba(0, 0, 0, 0.36);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.18);
+
+  /* --- Layout. --- */
+
+  /* THE FRAME'S EDGE. How far the VISIBLE part of a chrome control sits from
+     the edge of the panel it lives in — the collapse button's glyph on the
+     left, the appearance toggle's border on the right, the account button on a
+     rail-less header. Optical, not box: an icon button has no border, so the
+     thing the eye measures is the glyph, and a bordered group is measured at
+     its border. Aligning the two boxes instead would put the bordered edge 8px
+     nearer the fold than the glyph opposite it and read as crooked.
+
+     It is NOT the page gutter. Content keeps 24/32px (`08-page-anatomy.md`);
+     the frame is a narrower rail around it on purpose, so the chrome does not
+     compete with the screen for the same edge. Ignacio, 2026-08-21: the tool
+     header had 12px of box on the left and 32px on the right, which read as
+     two different margins because it WAS two different margins. */
+  --frame-inset: 20px;
+
+  /* THE FRAME'S RAIL. How wide a chrome control that floats over the frame is:
+     the header's search trigger, and the panels that float over a map.
+
+     One value because they line up VERTICALLY on the same screen and a reader
+     sees them as one column. On /map the rail was `w-80` and the search above
+     it `w-48 lg:w-64`, so the two edges missed each other by 12px and the panel
+     hung further into the canvas than the control it sat under (Ignacio,
+     2026-08-21: "que esa sección tenga el mismo ancho que el search bar").
+     Two literals in two files is two chances to move one and not the other.
+
+     It steps at `lg` because the search trigger already did, and a rail that
+     kept 16rem on a 900px canvas would be a quarter of the map. Written as a
+     custom property rather than as a Tailwind pair so both consumers can read
+     the SAME name and get the step for free. */
+  --frame-rail: 12rem;
+
+  /* THE LID OF A MENU. How wide the surface that drops out of an overflow
+     "…", a row's kebab or a filter's trigger is.
+
+     ONE NUMBER BECAUSE IT IS ONE OBJECT, and the alternative is what the
+     2026-09-02 audit counted: fifteen `DropdownMenuContent`s across the
+     registry and the showcase, sized by hand at SIX different numbers — 180,
+     200, 216, 220, 240 and 280px. Four of those six live inside the direct-mail
+     module alone, on menus that hold the same two or three verbs, so the same
+     gesture on two adjacent screens opened two different boxes. Nobody chose
+     that; each author picked the width that looked right beside the row they
+     were writing, which is how a measure with no name always ends up.
+
+     14rem, and it is a MINIMUM. `min-w-`, never `w-`: a fixed lid has to be
+     guessed wide enough for the longest verb it will ever carry, and the guess
+     is what produced the 240s — Radix already sizes the surface to its content,
+     so a floor gives the short menus one common edge and lets a long label take
+     the room it needs instead of wrapping inside a box somebody sized in 2026.
+     It sits above `componentGeometry.overlay.minWidthClass` (8rem), which is
+     the floor BELOW which a menu is unreadable; this is the floor at which one
+     looks deliberate.
+
+     It is not a popover measure. A surface that carries a heading, a count and
+     a scrollable list — the shell's scope picker, the emoji grid — is a panel
+     that happens to float, and those argue their own widths at their own call
+     sites. `export-menu.tsx` keeps its 280px for the same kind of reason and
+     writes it down: a scope row that must hold "Everything matching filters"
+     and its count on one line, with a viewport pair for the phone. A width
+     with a paragraph over it was never the problem. */
+  --menu-width: 14rem;
+
+  /* HOW WIDE A TRUNCATING CELL MAY GROW. The cap on a table cell whose content
+     is prose — a reason, a description, a name — before the ellipsis takes over
+     and the full string moves to the row's `title` or hover.
+
+     THE CAP IS NOT ABOUT THE CELL, IT IS ABOUT THE TABLE. `truncate` alone does
+     NOT let an auto-layout column shrink: a nowrap string's min-content is the
+     whole string however it is clipped, so an uncapped prose column widens the
+     table until a pinned column floats over its neighbour (measured in
+     `api-tokens-screen.tsx`: 297px asked, a 1298px table against a 1236px
+     port). Every cap in the tree was one author solving that for one column.
+
+     The 2026-09-02 audit counted seventeen of them wearing NINE numbers — 120,
+     180, 200, 210, 220, 240, 250, 260 and 320px. Eight of the seventeen are in
+     `direct-mail-suppressions-screen.tsx` and spell five of the nine, on cells
+     of the same kind in the same three tables: the reason column was 240px in
+     one table and 200px in the next, and the difference carried no meaning.
+
+     15rem — 240px, the middle of the band the tree had already settled into,
+     and roughly forty characters of the caption size these cells are set in:
+     long enough that most values are whole, short enough that one long one
+     cannot take the column beside it.
+
+     TWO KINDS OF CELL ARE DELIBERATELY NOT THIS. A cell that must stay narrow
+     because it is a footnote beside a status, and a cell that does not truncate
+     at all because a clipped figure is a wrong figure, both argue their number
+     where they stand. A cap with a reason above it is not drift. */
+  --cell-max: 15rem;
+
+  --container-max: 1280px;
+  --container-pad-mobile: 24px;
+  --container-pad-tablet: 48px;
+  --container-pad-desktop: 64px;
+  --section-pad-mobile: 48px;
+  --section-pad-tablet: 64px;
+  --section-pad-desktop: 96px;
+
+  /* --- Icon strokes, lucide. Section 10. --- */
+  --icon-stroke: 2;
+  --icon-stroke-emphasis: 2.4;
+
+  /* --- Motion. Quiet authority: short, eased, no bounce. ---------------------
+     THE RUNG IS CHOSEN BY WHAT MOVES, NOT BY TASTE, and that sentence is the
+     rule. These four values shipped in 0.1.0 and for months NOTHING in the
+     system read them: the tree carried six hand-written durations — 75, 150,
+     200, 300, 500 — across sixteen sites, plus `ease-out`, `ease-in-out` and
+     `ease-linear`. A published scale nobody reads is a scale that does not
+     exist.
+
+     WHY THE RUNG CANNOT BE A PREFERENCE. One duration for everything means the
+     SPEED depends on the distance, and that is what a reader actually perceives.
+     Measured on the rail, 2026-08-21: at 180ms the panel travels 160px at
+     889 px/s while the group's list unfolds 616px at 3422 px/s. Same gesture,
+     one part moving 3.8x faster than the other — the list snapped while the
+     panel glided, and it read as a fault rather than as fast (Ignacio).
+
+       --duration-fast   NOTHING TRAVELS. A change in place: colour, opacity, a
+                         focus ring, a chevron turning, a card fading up.
+       --duration-base   SOMETHING SMALL MOVES OR RESIZES, roughly under 200px:
+                         a menu appearing, a bar's width, a panel widening.
+       --duration-slow   A LARGE LAYOUT CHANGE: a list unfolding, a sheet
+                         crossing the viewport, anything over ~300px.
+
+     Under that rule the rail (160px) takes `base` and its list (616px) takes
+     `slow`, which is 1925 px/s — the two now move at comparable speeds instead
+     of arriving together, and the container finishing before its contents is a
+     sequence rather than a desync.
+
+     ONE CURVE. `--ease-standard` is the only one. `ease-in`, `linear` and a
+     spring are all decisions this system has already made, and made against.
+
+     Enforced by `tools/standards.mjs` — a bare `duration-200` or `ease-out` in
+     a component is a violation. */
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 320ms;
+
+  /* THE FOURTH ONE IS NOT ON THE RUNG, and that is the whole reason it needs a
+     name of its own rather than a fourth step.
+
+     The three above time a CHANGE BETWEEN TWO STATES: something was here, it is
+     now there, and the duration is chosen from how far it travelled. An AMBIENT
+     loop has no destination and never resolves — the sheen on a `MAGIC` button
+     sweeps and starts again for as long as the button is on screen — so "how
+     far did it travel" is not a question that can be asked of it, and putting it
+     on the rung would invite the next reader to pick `slow` for a shimmer
+     because a button is wider than 300px.
+
+     2.4s because an idle loop has to be SLOW ENOUGH TO IGNORE. Anything under a
+     second in the corner of the eye is a notification; this one is saying "there
+     is something clever behind this button", which is a thing a reader should be
+     able to notice once and then stop seeing. The reduced-motion block at the
+     foot of `bridge.css` collapses it like every other animation. */
+  --duration-ambient: 2.4s;
+}
+
+/* The `lg` step for the rail, at Tailwind's own 64rem breakpoint so the two
+   agree. It is here and not in a utility because both consumers read the
+   property by name: change this line and the header's search and the map's
+   floating panels move together, which is the whole reason the value has a
+   name at all. */
+@media (min-width: 64rem) {
+  :root {
+    --frame-rail: 16rem;
+  }
+}
+
+/* ============================================================
+   TEXTURE AND GRADIENT — sections 09 and 07b.
+   Textures orient, they do not decorate. Under 8% contrast.
+   Never stack two textures. Grid or dots, never both.
+   ============================================================ */
+:root {
+  --texture-size: 32px;
+  --texture-grid-light: rgba(0, 0, 0, 0.04);
+  --texture-grid-dark: rgba(255, 255, 255, 0.035);
+  --texture-dot-light: rgba(0, 0, 0, 0.06);
+  --texture-dot-dark: rgba(255, 255, 255, 0.05);
+
+  /* Pattern 2, vertical fade. Full-bleed dark heroes.
+     Both stops READ the dark ramp rather than retyping it: this is a derived
+     recipe inside the source of truth, and `--color-charcoal-deep` already
+     names this gradient as its consumer in its own comment (colors.css:20).
+     Re-tune either end of the ramp and the fade follows, instead of leaving
+     every full-bleed dark hero a shade off the page behind it. */
+  --gradient-dark-fade: linear-gradient(
+    180deg,
+    var(--color-charcoal) 0%,
+    var(--color-charcoal-deep) 100%
+  );
+}
+
+/* Pattern: 32px grid. Default hero / section-divider texture. */
+.bg-grid-fine {
+  background-image:
+    linear-gradient(to right, var(--texture-grid-light) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--texture-grid-light) 1px, transparent 1px);
+  background-size: var(--texture-size) var(--texture-size);
+}
+.bg-grid-fine-dark {
+  background-image:
+    linear-gradient(to right, var(--texture-grid-dark) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--texture-grid-dark) 1px, transparent 1px);
+  background-size: var(--texture-size) var(--texture-size);
+}
+
+/* Pattern: 32px dot grid. When texture should be quieter than grid. */
+.bg-dots-fine {
+  background-image: radial-gradient(var(--texture-dot-light) 1.2px, transparent 1.2px);
+  background-size: var(--texture-size) var(--texture-size);
+}
+.bg-dots-fine-dark {
+  background-image: radial-gradient(var(--texture-dot-dark) 1.2px, transparent 1.2px);
+  background-size: var(--texture-size) var(--texture-size);
+}
+
+/* Pattern 2, vertical fade. */
+.bg-fade-dark { background: var(--gradient-dark-fade); }
+
+/* Pattern 1, soft accent glow. Ambient light from off-screen, never a
+   Photoshop effect. Sits under the content. */
+.glow-accent { box-shadow: 0 0 80px rgba(var(--interactive-rgb), 0.10); }
+.glow-accent-corner {
+  background-image: radial-gradient(
+    120% 90% at 12% 0%,
+    rgba(var(--interactive-rgb), 0.16) 0%,
+    rgba(var(--interactive-rgb), 0) 62%
+  );
+}
+
+/* ============================================================
+   SEMANTIC ALIASES, THEMES, AND BRAND SCOPES
+
+   Always reference the semantic token, never the raw hex. Secondary and
+   tertiary text use DARKER values on cream and LIGHTER values on charcoal;
+   the token name stays the same and the value swaps with the theme, so
+   legibility survives a mode flip. Hard-coding a hex breaks the other mode.
+
+   Theme:  <html data-theme="light | dark">   default light
+   Brand:  <html data-brand="iq | rei | roof"> default iq
+   Both scopes can be applied to any subtree, not just the root, so a charcoal
+   band inside a cream page or a Roof section on an IQ page just works.
+   ============================================================ */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --interactive-text: var(--accent-text-light);
+
+  --background: var(--color-cream);
+  --layer-01: var(--color-warm-white);
+  /* The third floor, and it was the CARD's value until 2026-08-20 — which meant
+     light mode had two surfaces where the docs claimed three, and a sunken well
+     was indistinguishable from the thing it was sunk into. `#F1EEE8` is not a
+     new colour: it is the value the row zebra and `--muted` already use. */
+  --surface-sunken: #F1EEE8;
+  --surface-inverse: var(--color-slate-2);
+
+  --text-primary: var(--color-gray-1);
+  --text-secondary: var(--color-gray-2);
+  --text-helper: var(--color-gray-3);
+  --text-inverse: var(--color-cream);
+  /* All three display accents are mid-luminance fills. White misses even
+     large-text AA on each one (2.54 / 3.12 / 2.91:1); the shared product ink
+     clears normal-text AA at 6.71 / 5.46 / 5.85:1. */
+  --text-on-color: var(--color-gray-1);
+
+  /* THE OUTER EDGE IS THE HEAVY ONE, the divider inside it is the hairline.
+     That assignment was backwards until 2026-08-20 and it is why light mode read
+     flat: cream and warm white sit 1.045:1 apart — a real value from the guide,
+     but a step the eye cannot see — and the system's own answer is that "a
+     resting surface is a LINE, not a shadow". The line was doing 1.14:1 of work
+     where dark mode gets 1.27:1 from its surface step alone.
+
+     Nothing new is invented here: both values are the guide's published
+     border tokens, now assigned to the jobs they are named for. `border-heavy`
+     bounds a surface; `border-hairline` separates rows inside one. */
+  --border-subtle-01: var(--color-border-heavy);
+  --border-strong-01: var(--color-border-heavy);
+  --card-divider: var(--color-border-hairline);
+  --card-shadow: var(--shadow-card);
+
+  --chrome-bar-bg: var(--color-warm-white);
+  --track-neutral: var(--color-border-hairline);
+
+  /* THE SCROLLBAR IS CHROME, NOT CONTENT. A tint of the page's own ink, not a
+     grey from another system: 18% of `--color-gray-1` over cream lands on
+     #D2D0CE, which is one step darker than `--color-border-heavy` — readable
+     as a mark, too light to read as a column. The hover value is the same ink
+     at 34%, and it is only reachable on the legacy path (see bridge.css):
+     `scrollbar-color` has no hover, because the property is inherited and any
+     `:hover` selector for it matches the whole ancestor chain. */
+  --scrollbar-thumb: rgba(28, 28, 30, 0.18);
+  --scrollbar-thumb-hover: rgba(28, 28, 30, 0.34);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --interactive-text: var(--accent-text-dark);
+
+  /* THE RAMP IS RADIX SLATE SINCE 6.1.0. colors.css carries the steps, their
+     jobs and every measurement; this block only assigns them. Floor, page and
+     card are steps 1, 2 and 3 — page to card is 1.11:1 where titanium gave
+     1.27, and that is fine because the EDGE carries dark resting depth, not the
+     fill (19-elevation-and-depth.md, 2026-08-27). */
+  --background: var(--color-slate-2);
+  --layer-01: var(--color-slate-3);
+  --surface-sunken: var(--color-slate-1);
+  --surface-inverse: var(--color-cream);
+
+  /* Three text jobs, three ramp steps: 12, 11 and 10. Warm white was the ink
+     until 6.1.0; on a cool grey it read a shade yellow, and slate-12 is the
+     white the ramp was drawn against. 15.15:1 on the page and 13.70 on the
+     card; secondary 8.45 / 7.64 where white-60 gave 7.03 / 6.07; helper 4.15 /
+     3.75, and 3.08 on the header band, held to the 3:1 label floor as before. */
+  --text-primary: var(--color-slate-12);
+  --text-secondary: var(--color-slate-11);
+  --text-helper: var(--color-slate-10);
+  --text-inverse: var(--color-gray-1);
+  /* The accent fill does not change with the theme, so neither does its ink. */
+  --text-on-color: var(--color-gray-1);
+
+  /* THE EDGE IS THE CARD'S, THE DIVIDER IS STILL A WHISPER — the 2026-08-20
+     decision, restated on the new ramp. Both stay ALPHAS so they keep reading
+     over a hover wash or a selected row: slate-a6 composites over the card to
+     slate-7 exactly (#43484E), 1.72:1 on the card and 1.91 against the page,
+     where white-14 over titanium gave 1.57 and 2.00. The divider is slate-a4,
+     1.37 on the card — under the edge, as it must be. Strong is the solid twin
+     of the edge, which is the light rule too: there both borders read
+     `--color-border-heavy`. */
+  --border-subtle-01: var(--color-slate-a6);
+  --border-strong-01: var(--color-slate-7);
+  --card-divider: var(--color-slate-a4);
+  --card-shadow: var(--shadow-card-dark);
+
+  --chrome-bar-bg: var(--color-slate-a2);
+  --track-neutral: var(--color-slate-5);
+
+  /* The same hand as before: the thumb is the ramp's 19% alpha, 1.71:1 on the
+     page, where 16% white measured about the same; the hover is its 36%, 3.02.
+     8% white disappeared at 4px wide, and slate-a4 at 11% would too. */
+  --scrollbar-thumb: var(--color-slate-a6);
+  --scrollbar-thumb-hover: var(--color-slate-a8);
+}
+
+/* ---- Brand accent scopes. The vertical accent layers on top of the spine;
+        it never replaces cream, charcoal, or the type stack.
+   Each brand publishes an accent-text value for cream and one for charcoal.
+   The theme scope picks between them, so a charcoal card dropped inside a light
+   Roof page still reads orange, not emerald. On charcoal, emerald steps up to
+   its light variant for contrast; sky and orange already read at full
+   saturation on dark — at the 3:1 DISPLAY floor this pair is held to, which
+   they clear on slate-5, the worst dark surface (6.80 emerald-light /
+   4.19 sky / 4.49 orange). `--accent-ink-*` below is the other value, held to
+   4.5:1; do not read one table as though it were the other. */
+:root,
+
+/* --- Accent as INK, per brand. Added by the portable kit. ------------------
+   `--interactive` is a FILL. As text on cream it fails contrast in all three
+   brands (emerald 2.5:1, sky 2.9:1, orange 2.8:1 against #FAF8F5), so every
+   accent-coloured LABEL resolves `--accent-ink` instead, and each brand
+   publishes its own value per theme — darkened under cream, lifted on
+   charcoal.
+
+   THE BASIS IS EVERY SURFACE THE SYSTEM PAINTS THIS INK ON, which is six in
+   each theme rather than the three the old basis named. `bridge.css` carries
+   the argument for why "the worst of the three light surfaces" was the wrong
+   set; the values it produced live here, worst surface named first:
+
+     light — worst is `--accent-strong`, the 22% wash over the card
+       iq   #036B4E  4.86:1     rei  #0362A7  4.54:1     roof #A24116  4.59:1
+     dark  — worst is slate-5 #2E3135, which is `--muted` and `--secondary`
+       iq   #34D399  6.80:1     rei  #3DAEFE  5.40:1     roof #FF8450  5.39:1
+
+   BOTH HALVES MOVED ON 2026-08-25, and only for rei and roof. Light was
+   #036EBC and #B84A19, picked against page, card and zebra and never against
+   the accent's OWN washes, which `toggle.tsx` paints this ink on: 4.22 and
+   4.16 on the 12% rung, worse on the 22% one. Dark was the raw accent, on the
+   written claim that it "already clears it on titanium" — #0495FE is 4.47 there
+   and 3.64 on titanium-mid, #FF6723 is 4.79 and 3.90. Every one of those misses
+   AA, and every one of them shipped green because the only brand that passed
+   was `iq`, which is the brand this repo renders itself in.
+
+   The source app hard-coded this token to emerald in `globals.css` for both
+   themes, which is correct for `iq` and paints green ink on a Roof or REI
+   app. This is the one value the kit deliberately changed. ----------------- */
+[data-brand="iq"] {
+  --interactive: var(--color-emerald);
+  --interactive-strong: var(--color-emerald-dark);
+  --interactive-soft: var(--color-emerald-light);
+  --interactive-rgb: var(--rgb-emerald);
+  --accent-text-light: var(--color-emerald-dark);
+  --accent-text-dark: var(--color-emerald-light);
+  --brand-name: "8020IQ";
+  --accent-ink-light: #036B4E;
+  --accent-ink-dark: var(--color-emerald-light);
+}
+[data-brand="rei"] {
+  --interactive: var(--color-sky);
+  --interactive-strong: #0479CC;                  /* darkened sky, hover only */
+  --interactive-soft: var(--color-sky);
+  --interactive-rgb: var(--rgb-sky);
+  --accent-text-light: var(--accent-ink-light);
+  --accent-text-dark: var(--color-sky);
+  --brand-name: "8020REI";
+  /* Sky darkened and sky lifted — same hue (205°), same saturation, the
+     lightness moved to whatever the worst surface asked for. */
+  --accent-ink-light: #0362A7;
+  --accent-ink-dark: #3DAEFE;
+}
+[data-brand="roof"] {
+  --interactive: var(--color-orange);
+  --interactive-strong: #E0521A;                  /* darkened orange, hover only */
+  --interactive-soft: var(--color-orange);
+  --interactive-rgb: var(--rgb-orange);
+  --accent-text-light: var(--accent-ink-light);
+  --accent-text-dark: var(--color-orange);
+  --brand-name: "8020Roof";
+  /* Orange darkened and orange lifted, on the same hue (18°) as the fill. */
+  --accent-ink-light: #A24116;
+  --accent-ink-dark: #FF8450;
+}
+
+/* Theme is an ATTRIBUTE in this system, not a class. `data-theme` and
+   `data-brand` both work on any subtree, which is how a charcoal band inside a
+   cream page or a Roof section on an IQ page resolve their own accents.
+
+   THAT SENTENCE WAS HALF FALSE UNTIL 2026-08-20 and the correction is worth
+   knowing: `data-theme` always worked on a subtree, `data-brand` moved only the
+   raw inputs and left every derived token — `--accent-ink`, `--primary`,
+   `--accent`, the rings — at the root brand's value. A branded section changed
+   some of its colours and kept the rest. `bridge.css` now redeclares the
+   derived set under `[data-brand]`, with the one nesting CSS cannot express
+   written down beside it.
+
+   (Apps still on a `.dark` class: import `@8020rei-com/tokens/compat` as well.) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* 8020IQ — the bridge.
+
+   shadcn primitives speak `--card` / `--border` / `--primary`. The design
+   system speaks `--layer-01` / `--border-subtle-01` / `--interactive`. Aliasing
+   one onto the other in ONE place means every component inherits the identity,
+   and a token change lands here rather than in two dozen files.
+
+   `--background` is the one name BOTH vocabularies use, and it needs no alias:
+   6.0.0 gave the page surface — which this system used to call `-​-surface-page`
+   — Carbon's spelling, and Carbon's word for it is the word shadcn was already
+   using. The gap below is where its alias used to sit; putting one back would
+   read `--background: var(--background)`, which resolves to nothing.
+
+   These are aliases only. NEVER give a shadcn name a raw hex — the contrast flip
+   between cream and charcoal lives in the semantic layer, and a hard-coded value
+   silently breaks the other mode. The carve-out the body below earns: the three
+   `--support-*` tones and `--magic` ARE declared as literals here, because a
+   tone is brand-invariant by construction and has no per-brand source to alias.
+
+   THERE WAS A SECOND COPY OF THIS HEADER until 6.0.0, seventeen lines long and
+   near-verbatim, and the two disagreed: one said "every component", the other
+   "all 24 copied components" against a registry that ships 310 items. Two
+   statements of one policy is one statement and one liability, and the reader
+   cannot tell which is current.                                              */
+
+:root,
+[data-theme="light"] {
+  /* Component roles that preserve the measured values they replace. */
+  --scrim: rgb(0 0 0 / 0.5);
+  --rating-star: var(--color-traffic-yellow);
+
+  /* NO `--background` LINE HERE, and its absence is the point. shadcn's
+     `--background` and the page surface this system used to call
+     `-​-surface-page` were two names for one value. 6.0.0 gave
+     the design-system name Carbon's spelling, which is the word shadcn was
+     already using, so the alias that used to sit on this line would now read
+     `--background: var(--background)` — a self-reference that resolves to
+     nothing and paints an unstyled page. `themes.css` declares it directly, per
+     theme, and that is the only declaration anywhere. The same trap is recorded
+     at the `@theme` block below. */
+  --foreground: var(--text-primary);
+  --card: var(--layer-01);
+  --card-foreground: var(--text-primary);
+  --popover: var(--layer-01);
+  --popover-foreground: var(--text-primary);
+
+  /* THE PRIMARY FILL IS THE BRAND, AND IT IS `--accent-ink` THAT CARRIES IT —
+     brand owner, 2026-08-21, superseding the ink fill 0.6.0 shipped that same
+     day. The CTA has to read as the active brand: emerald under `iq`, sky
+     under `rei`, orange under `roof`. An ink CTA is brand-neutral by
+     construction, and the one control the eye goes to first was the one place
+     the brand never appeared.
+
+     WHAT 0.6.0 WAS RIGHT ABOUT is that the DISPLAY accent cannot sit behind
+     text. White on `--interactive` measures 2.54:1 on iq, 3.12 on rei and
+     2.91 on roof; on the warm-white card it is worse still (2.29 / 2.81 /
+     2.63). Those numbers do not go away by wanting the button green.
+
+     SO THE FILL IS THE ACCENT THE SYSTEM ALREADY DARKENED FOR CONTRAST.
+     `--accent-ink` is not a new colour and not a new decision: it is the
+     per-brand, per-theme accent this file already resolves for `--focus`,
+     `--accent-fg` and every accent LABEL, precisely because the display accent
+     fails against paper. Paired with `--text-inverse` it clears the 4.5:1 floor
+     in both themes and all three brands, measured against the page:
+
+       light  fill --accent-ink-light,  label cream #FAF8F5
+         iq   #036B4E  6.16:1     rei  #0362A7  5.99:1     roof #A24116  6.00:1
+       dark   fill --accent-ink-dark,   label gray-1 #1C1C1E
+         iq   #34D399  8.85:1     rei  #3DAEFE  7.04:1     roof #FF8450  7.02:1
+
+     Four of those six numbers moved on 2026-08-25 and all four moved UP. The
+     ink was repicked against the surfaces it is set as TEXT on (see
+     `--accent-ink` below), and a fill reading its own ink inherits the lift
+     for free — rei's dark CTA went from 5.46 to 7.04 without anybody deciding
+     anything about buttons.
+
+     The theme flip is free, and that is the point of writing it as one token:
+     `--accent-ink` is the darkened accent under cream and the vivid accent
+     under charcoal, so light gets white-on-deep-green and dark gets
+     ink-on-bright-green with no second declaration to keep in step. The
+     foreground pair is unchanged from 0.6.0 — `--text-inverse` was already
+     cream in light and near-black in dark, which is exactly the label each
+     fill needs.
+
+     `--primary` NOW READS `--interactive` AGAIN, INDIRECTLY, so it is back on
+     the list of tokens the `[data-brand]` rules four hundred lines below must
+     re-resolve. That block documents why; adding a derived token here without
+     adding it there is the bug 0.6.0 shipped, in the opposite direction. */
+  --primary: var(--accent-ink);
+  --primary-foreground: var(--text-inverse);
+
+  /* The recessed light roles share the published third surface. Keeping the
+     alias, rather than copying its current hex, makes a future surface change
+     one decision instead of four values that can drift. */
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--text-primary);
+
+  /* shadcn's `--muted` is a SURFACE; `--accent` is a hover surface. Neither is
+     an ink. The one followable accent ink is `--accent-fg`. */
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-secondary);
+  /* ── Hover is the accent, everywhere, or it is not a system ───────────────
+     `--accent` was a neutral step off the card (`#e9e5dd`, = --row-hover) while
+     `--sidebar-accent` below was already an emerald wash. So the rail answered
+     the pointer in brand and every other control — the service selector, the
+     user menu, quiet and ghost Buttons, the county picker, the KPI tiles —
+     answered it in beige. Same gesture, two different languages, and the one
+     the reader learns first is the one in the rail.
+     Same expression as `--sidebar-accent`, deliberately: one hover identity,
+     changed in one place. Alpha and not a mixed hex so it lands correctly on
+     the card, the popover and the striped row alike. */
+  --accent: rgba(var(--interactive-rgb), 0.12);
+  /* THE SECOND RUNG OF THE SAME WASH, and a control that RESTS on the accent is
+     why it exists (reported from 8020iq-wiki, 2026-08-22). Its service selector
+     names the app's primary scope, so it is painted in brand rather than in a
+     neutral — and its `hover:bg-accent` was then a no-op dressed as a state,
+     because a surface cannot hover to the colour it already is. A SELECTED row
+     needs the same rung for the mirror reason: painted at 0.12 it cannot be
+     told apart from the row the pointer happens to be on.
+
+     0.22 is not a new number. The `::selection` rule in the `@layer base` block
+     at the foot of this file was already `rgba(var(--interactive-rgb), 0.22)`,
+     so the system had exactly one stronger wash and this gives it a name; that
+     rule now reads the token rather than keeping the second copy.
+
+     Alpha and not a mixed hex, like `--accent`: it has to land correctly on the
+     card, the popover and the striped row alike. */
+  --accent-strong: rgba(var(--interactive-rgb), 0.22);
+  --accent-foreground: var(--text-primary);
+  /* The accent as a FOREGROUND — text, an icon, a small fill. It resolves to
+     `--accent-ink`, the contrast-picked value, NOT to the display accent: the
+     raw accent as text is 2.5 to 2.9:1 in all three brands. The display value
+     is still reachable as `--interactive-text` for large type, where 3:1
+     applies. Named `fg` because that is what it is. */
+  --accent-fg: var(--accent-ink);
+
+  /* ── Semantic INK, which is not the same thing as semantic colour ────────
+     The DS publishes `--color-traffic-yellow` and `--color-danger` under
+     "macOS chrome traffic lights — always full colour". Those are dots. Used as
+     text on cream they measure 1.49:1 and 2.43:1, so a "Partial" badge was
+     effectively unreadable and "Gap" not much better.
+
+     `--support-warning: #8a5a00` was already a darkened, app-level answer to exactly
+     that problem; these two extend the same precedent to the other two
+     semantics rather than inventing a parallel palette:
+
+       support-success  #036b4e  below emerald-800 — 5.89:1 on warm white
+       support-error    #a4231c  the portal's own negative — 5.9:1
+
+     The first row read `positive #047857 emerald-800 — 4.9:1` until 6 Sep 2026,
+     and #047857 is a value no line in this file has ever declared: `git log
+     -S047857` puts it in exactly one commit and as this comment, never as a
+     declaration, while the token below has held #036b4e since it was written
+     and `grep -rn 047857 packages/tokens/src registry apps/showcase/app`
+     returns that comment line and nothing else. The ratio drifted with the hex:
+     the ink that actually ships measures 5.89:1 on warm white, not 4.9. A table
+     of MEASURED values naming a colour the file does not hold cannot be checked
+     against anything, and a reader who trusts the 4.9 is reading the margin of
+     a colour that is not painting.
+
+     The bright chrome values are untouched and still do what they are for:
+     `--color-danger` and `--color-traffic-yellow` remain the MAP FILLS and the
+     status dots, where they sit under nothing and carry no glyph. Ink and fill
+     are different jobs and now use different tokens.                        */
+  --support-error: #a4231c;
+  --support-error-foreground: #ffffff;
+  /* The destructive twin of `--accent`, and the same 12% for the same reason:
+     hover is ONE gesture in this system, so the only thing that may change
+     between a normal row and a dangerous one is the hue, never the strength.
+
+     `color-mix` rather than an `rgba()` like `--accent` uses, because
+     `--support-error` is published as a hex with no rgb triplet beside it — same
+     recipe `BAND_TINT` in `ui.tsx` already uses for the red band. Alpha and not
+     a flattened hex so it lands correctly on the card, the popover and the
+     striped row alike.
+
+     Repeated in the dark scope below because an inherited custom property
+     carries the value computed where it was declared. Without the repetition,
+     a dark subtree inherits a wash already bound to light's destructive ink. */
+  --support-error-wash: color-mix(in srgb, var(--support-error) 12%, transparent);
+  --support-success: #036b4e;
+  --support-success-foreground: #ffffff;
+  /* #845600, and the 0.02 that moved it is the point.
+     It was #8a5a00, picked to clear 4.5:1 as INK ON A SURFACE — 5.35 on the
+     card, comfortably past. What nobody measured was the caution badge on its
+     OWN 10% wash, which is not a declared token pair: the wash is composited at
+     render time out of the caution hue and whatever surface is behind it.
+     On the clients portal that surface went from #FFFFFF to #F5F3EF when it
+     adopted this layer, the wash warmed with it, and the pair landed at
+     4.48:1 — two hundredths short, and invisible to every token-level check
+     because neither half of it is a token.
+     Found by axe running on the rendered page in that app's e2e suite, which
+     is the only check in either repo that measures what a browser actually
+     painted. #845600 clears the wash at 4.79 and the card at 5.72. */
+  --support-warning: #845600;
+  --support-warning-foreground: #ffffff;
+
+  /* ── MAGIC IS A TONE, WHICH IS WHY IT IS NOT THE BRAND ────────────────────
+     The button that did the arithmetic for you painted `--primary`, and
+     `--primary` is `--accent-ink`, and `--accent-ink` is the brand. So "the
+     machine did this" and "this saves the form" were drawn in one colour, and
+     which colour depended on the sub-brand the reader happened to be in:
+     emerald under `iq`, sky under `rei`, orange under `roof`. One capability,
+     three appearances, none of them its own.
+
+     `MAGIC` in `components/brand/devices` said a hue of its own would be "a
+     fourth accent". It would not. An ACCENT is per-brand identity — that is the
+     whole definition, and it is why there are exactly three. This is a semantic
+     TONE, the fifth beside `--support-error`, `--support-success` and `--support-warning`, and a
+     tone is brand-INVARIANT by construction: destructive is the same red in all
+     three brands for precisely the reason a magic action is the same violet.
+
+     WHY VIOLET, AND IT IS NOT TASTE — it is the only hue this palette has left.
+     Emerald is `iq`, sky is `rei`, orange is `roof`, red is destructive, amber
+     is caution, green is positive. Violet collides with nothing, in either
+     theme or any brand. It is also the hue a reader already decodes as
+     generated — Copilot, Notion, Linear, Raycast all landed on it — so the one
+     thing this system does not have to do is teach it.
+
+     Same fill/ink split as `--accent-ink` below: the DARKENED violet under
+     cream, the vivid one on charcoal, each paired with `--text-inverse`.
+
+       light  #6D28D9  label cream #FAF8F5   6.70:1   AA
+       dark   #A78BFA  label ink   #1C1C1E   6.25:1   AA
+
+     Both were picked to sit INSIDE the band the three brand fills occupied —
+     4.91–6.16 light, 5.46–8.85 dark — and the band moved out from under them
+     on 2026-08-25 when `--accent-ink` was repicked against its own washes. It
+     is 5.99–6.16 light and 7.02–8.85 dark now, so violet lands 0.54 above the
+     light band and 0.77 below the dark one. In painted terms those are the
+     same statement: the violet is one shade DARKER than the brand fill beside
+     it in either theme, which is less separation than the hue already gives
+     and in the direction that costs nothing — a magic button still never reads
+     louder than the primary. The property this pair exists to hold survives;
+     the numbers around it moved. The same two values clear AA as text as well
+     (6.41:1 on the light card, 5.12:1 on the dark one), so a tinted wand glyph
+     or a "magic" label needs no third value.
+
+     Brand-owner decision, taken 2026-08-22 with those numbers on the table.  */
+  --magic: #6d28d9;
+  /* A fill that carries a label declares the label. `--text-inverse` is cream
+     here and ink under dark, which is the same pairing `--primary-foreground`
+     makes and for the same reason: the two halves were picked against each
+     other, so neither may be resolved without the other. */
+  --magic-foreground: var(--text-inverse);
+
+  /* Accent INK for eyebrows and small labels. The DS points
+     `--interactive-text` at emerald-dark #059669 and sanctions it for
+     "links on cream, eyebrows" — but at the 11px this app sets eyebrows in,
+     that measures 3.4:1 and misses AA. Same fill/ink split as above: the
+     accent itself is untouched, this is only what accent TEXT resolves to.
+
+     ── THE BASIS IS THE SURFACE LIST, AND IT WAS THREE NAMES SHORT ──────────
+     This block said "measured against the zebra row (#F1EEE8), the worst of
+     the three light surfaces" for months, and the sentence was true about the
+     three it named — page #FAF8F5, card #F5F3EF, zebra #F1EEE8 — and wrong
+     about being the worst. The accent's OWN washes are surfaces the system
+     paints this ink on: `toggle.tsx` sets a selected label with
+     `data-[state=on]:bg-accent data-[state=on]:text-primary`, `--primary` is
+     `--accent-ink`, and `--accent` is `rgba(var(--interactive-rgb), 0.12)`
+     over the card. Ink and ground are then the SAME HUE moving together, which
+     is why no amount of tuning the other three could have rescued the pair.
+
+     Six surfaces, not three, and the worst one is the last:
+
+       page #FAF8F5 · card #F5F3EF · zebra #F1EEE8
+       --accent          12% over the card    (the selected toggle)
+       --accent/70        8.4% over the card  (its hover rung)
+       --accent-strong   22% over the card    (a selected row)
+
+     WHAT THAT COST, MEASURED. rei #036EBC read 4.22 on the 12% wash, 4.38 on
+     the hover rung and 3.78 on the 22% one; roof #B84A19 read 4.16 / 4.32 /
+     3.76 — and 4.4982 on the zebra row this block claimed it cleared at 4.50,
+     which is the same rounding-up that the caution ink was fixed for. Only iq
+     passed, and iq is the brand this repo renders itself in, so every visual
+     review saw a correct control. Found by a consumer's axe sweep on a
+     rendered route, exactly like `--support-warning` above: #845600 clears the wash at
+     4.79 and the card at 5.72, and this is that audit finally reaching the
+     accent.
+
+     #0362A7 clears the 22% wash at 4.54 and the page at 5.99; #A24116 clears
+     it at 4.59 and the page at 6.00. Same hue and saturation as the fill in
+     both cases — 205° for sky, 18° for orange — so only the lightness moved
+     and the brand is still the brand. iq was already past every one of the six
+     (4.86 worst) and is untouched.
+
+     THE ALTERNATIVE WAS TO CHANGE THE COMPONENT, and it costs more. Painting
+     `text-accent-foreground` on the selected toggle spends the hue step
+     between hover and selected that `toggle.tsx` argues for at length; fixing
+     the token keeps three rungs of one hue and fixes every other call site at
+     the same time. `tools/tests/primitive-contrast.test.mjs` now measures the
+     ink on all six surfaces off these token files, so the basis is checked
+     rather than stated — which is the only reason to trust the paragraph
+     above. */
+  --accent-ink: var(--accent-ink-light);   /* per brand — see ds/themes.css */
+
+  --border: var(--border-subtle-01);
+  --border-strong: var(--border-strong-01);
+  /* ── A FIELD'S EDGE IS THE FIELD ──────────────────────────────────────────
+     `--input` was `--border-strong-01` (#DDD7CE), which measures 1.35:1 on
+     the page and 1.29:1 on the card. That 1px line is the ONLY thing marking
+     where an input, a textarea, a select or a checkbox begins — there is no
+     fill behind them — so at 1.3:1 the control had no visible boundary at all
+     and the reader was aiming at a rectangle they had to infer.
+
+     1.4.11 puts the floor for a UI component's boundary at 3:1, and unlike the
+     grid line below this one is not scaffolding: it IS the component. #8C877C
+     clears it on all three surfaces (3.37 page · 3.23 card · 3.09 sunken).
+     Separated from `--border` on purpose — a card's hairline and a field's edge
+     are different jobs, and holding the hairline to 3:1 would box every panel
+     in a line as loud as its content. */
+  --input: #8c877c;
+  /* ── The ring is INK, not the display accent ──────────────────────────────
+     `--interactive` as a 3px ring measures 2.39:1 on the page and 2.29:1 on
+     the card in light — under the 3:1 a focus indicator has to clear, on every
+     input, textarea, checkbox, select and switch. It passed in dark (6.98:1),
+     which is why it survived: the failure is light-only.
+
+     `--accent-ink` is the same colour decision already made for accent TEXT,
+     and it clears in all three brands (worst case Roof on sunken, 5.49:1 — it
+     was 4.50 until the ink was repicked above, and 4.50 was itself a rounded
+     4.4982). The display accent is still the fill; this is the ink. */
+  --focus: var(--accent-ink);
+
+  /* ── A PLACEHOLDER THAT WAS A STILL FRAME, AT A VALUE THAT WOULD NOT HAVE
+        SURVIVED MOVING ────────────────────────────────────────────────────────
+     The pair was #E3DED6 / #EFEBE4 and it never animated once. `skeleton.tsx`
+     asked for `animate-[skeleton-pulse_2s_ease-in-out_infinite]`, an arbitrary
+     animation utility emits the shorthand AND NOTHING ELSE, and no
+     `@keyframes skeleton-pulse` existed anywhere in the package: valid CSS,
+     naming a keyframe list that does not exist, doing nothing, warning about
+     nothing. The keyframes are at the foot of this file now, published beside
+     the values they read, and `--animate-skeleton-pulse` in the bridge below
+     is the form that cannot break that way again.
+
+     WHICH MADE THE VALUES MATTER FOR THE FIRST TIME, and they did not hold.
+     Most skeletons sit on a CARD — `MetricSkeleton` and `ChartSkeleton` draw
+     their own, `TableSkeleton` fills one — and on `--layer-01` the old
+     rest measured 1.21:1 and the old peak 1.07:1. 1.07 is not a faint
+     placeholder; it is the card. The dead animation was covering for a pair
+     that would have disappeared for half of every cycle the moment it ran.
+
+     So both ends are picked against the CARD, the tighter of the two surfaces
+     a skeleton actually lands on, with a floor of 1.29:1 at the faint end:
+
+       --skeleton        1.55 page · 1.48 card    the resting fill
+       --skeleton-pulse  1.35 page · 1.29 card    the far end of the breath
+
+     #DDD7CE is `--color-border-heavy`, the ramp's own table outline: at its
+     faintest the placeholder is exactly as visible as the rule around the
+     thing it is standing in for, which is the floor argued from rather than a
+     number chosen to clear one.
+
+     REST IS THE STRONGER END, in both themes, and that is not symmetry for its
+     own sake. The reduced-motion block at the foot of this file collapses
+     `animation-duration`, which lands the element on the animation's FINAL
+     frame — 100%, which is `--skeleton`. A reader who asked for less motion
+     gets the legible value and not a still of the faint one. The pulse always
+     dips TOWARD the surface, and never past the floor. */
+  --skeleton: #d0c9bd;
+  --skeleton-pulse: #ddd7ce;
+
+  /* Table row ladder. Cream page, warm-white card, so the stripe has to step
+     DOWN from the card rather than up from the page. */
+  --row: var(--layer-01);
+  --row-alt: var(--surface-sunken);
+  /* THE ROW HIGHLIGHT IS THE ACCENT, AND IT WAS EMERALD IN ALL THREE BRANDS.
+     `#daece2` — rgba(16,185,129,0.12) composited on `--layer-01`, typed out
+     as a literal — so hovering a row on a Roof or a REI screen lit it green
+     (Ignacio, 2026-08-20). A brand colour written as a hex is a brand colour
+     that stops being one.
+
+     IT STILL HAS TO BE OPAQUE. A pinned column is `bg-inherit` (see table.tsx),
+     so an alpha row fill would let the columns scrolling underneath show
+     through the frozen one. `color-mix` against `--layer-01` returns an
+     opaque colour — there is no `transparent` operand — so the constraint the
+     literal existed to satisfy is satisfied by the expression instead. Same
+     technique as `--support-error-wash` above.
+
+     It reproduces the old value EXACTLY for `iq` — #daece2 light, #293d38 dark
+     — so this changed nothing for the parent brand and fixed the other two.
+     Text on the hovered row: 13.84 / 13.56 / 13.59:1 light, 10.89 / 11.24 /
+     11.23:1 dark, across iq / rei / roof. */
+  --row-hover: color-mix(in srgb, var(--interactive) 12%, var(--layer-01));
+  --row-selected: #ded8ce;
+  /* THE BAND STOPPED BEING A BLOCK (2026-08-30), and it took two rounds to get
+     here because the first one fixed the wrong half.
+
+     Round one moved it off `--color-charcoal` (16.71:1 against its own cream
+     page) after Ignacio read a table and said "es muy negro y daña a los ojos."
+     `--color-titanium` brought that to 13.15:1 and everyone called it solved.
+
+     IT WAS NOT SOLVED, IT WAS DIMMED. German Alvarez, on /primitives/data:
+     "The black header is the loudest thing on the page, so my eye lands on the
+     word COUNTY before it lands on a single number. That's backwards. The
+     header is what you consult once, the data is what you came for." They also
+     named the part nobody had: titanium is a COOL grey on a warm cream page,
+     "so it reads as pasted on rather than part of the page."
+
+     Both are true, and the tell was sitting in the block below this one all
+     along. On dark the band steps AWAY FROM ITS ROW BY 1.23:1 — a whisper —
+     while on light it was inverting at 12.58:1. One rule, two wildly different
+     readings; the light side was not following the rule, it was shouting.
+
+     So light now steps the same distance the dark side always did, down the
+     warm ramp instead of out of it. `--color-border-hairline` invents nothing:
+     it is the warm value the system already spends on a row divider, and it
+     puts the row ramp in the order the reader needs — row 1.00, zebra 1.09,
+     band 1.14, SELECTED 1.12 past the band with its own 3px bar. Selection is
+     now the loudest state on the table and the header is the quietest, which
+     is what "the data is what you came for" means in tokens.
+
+     The ink inverts back with it: `--text-primary` at 13.44:1, so the LABEL is
+     as legible as it ever was while the 40px rectangle behind it stops being a
+     mass. The band is bounded by `--border-strong` rather than by brute value
+     (table.tsx), which is the part that answers "a hairline is not enough on a
+     wide table" — it is not a hairline alone, it is a filled strip with a rule.
+
+     The unsorted chevron moved off `--text-helper` for this: gray-3 lands at
+     2.57:1 here, under the 3:1 floor a non-text graphical object is held to
+     (13-contrast.md). It is `--text-secondary` now — 4.73:1 on light, and 5.24
+     on dark where it used to be 3.25. */
+  --row-header: var(--color-border-hairline);
+  --row-header-foreground: var(--text-primary);
+
+  /* ── The rail is the GROUND, the inset is the panel on it ─────────────────
+     `variant="inset"` means the shell paints the sidebar colour edge to edge and
+     the content floats on top of it as a rounded panel. That only reads as depth
+     if the two surfaces differ. Both were `--layer-01` against
+     `--background`: 5 units apart in light, and in dark both
+     resolved to charcoal — the SAME hex, with no border and no shadow anywhere.
+     The rail and the content were one flat field.
+
+     So the rail steps DOWN, one published step below the panel it carries:
+     `#f1eee8` here (the `--row-alt` step) and `--surface-sunken` in dark, which
+     the DS already names as the bottom stop of the ramp. Recessed ground, raised
+     panel — and SidebarInset now carries the border and the card shadow that
+     make the panel an object rather than a region. */
+  --sidebar: var(--surface-sunken);
+  --sidebar-foreground: var(--text-primary);
+  /* The rail's filled control follows `--primary`, for the same reason and
+     with the same numbers. Leaving it on ink would have made the one screen
+     with a sidebar the one screen where the CTA is not the brand. */
+  --sidebar-primary: var(--accent-ink);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent: rgba(var(--interactive-rgb), 0.12);
+  --sidebar-accent-foreground: var(--text-primary);
+  /* The stronger divider, not the hairline: on the recessed rail the hairline
+     measured barely over 1:1 and the header rule under the wordmark vanished. */
+  --sidebar-border: var(--border-strong-01);
+  /* Same reason as `--focus`: on the recessed rail (#F1EEE8) the display accent
+     measured 2.19:1. */
+  --sidebar-ring: var(--accent-ink);
+
+  /* Elevation, named for the JOB. The DS publishes the raw values; these are
+     the two the component layer asks for by name, and they deliberately carry
+     a DIFFERENT name than the DS tokens they point at — see the @theme block. */
+  --elevation-overlay: var(--shadow-card-hover);
+  --elevation-modal: var(--shadow-modal);
+  /* The old `ring-black/5` optical edge, named by overlay role. */
+  --overlay-ring: rgb(0 0 0 / 0.05);
+
+  /* `--radius` is declared HERE and not restated in the dark block, and it is
+     the one theme-invariant role that is not — the sentence opening that block
+     says they all are. It stays a single declaration on purpose: a radius has
+     no light and dark value to diverge, so restating it would be inviting the
+     divergence rather than guarding one. The sentence is what is inexact. */
+  --radius: var(--border-radius-16);
+  /* ── Chart series ──────────────────────────────────────────────────────────
+     Five is the cap. A sixth series is a chart that should be a table. */
+  /* FIVE HUES, FIXED — and this replaces a derivation that was wrong twice.
+
+     They were `accent-ink, positive, destructive, caution, neutral`, on the
+     argument that a chart should follow the brand and that a series meaning
+     "good" should already be the colour used for good.
+
+     It BROKE OUTRIGHT in the parent brand: `iq`'s accent ink and `--support-success`
+     are both #036B4E, so a two-series chart drew both series in ONE colour.
+     Measured on the deployed site — two lines, one unique stroke.
+
+     And the reasoning was wrong underneath the collision. A CATEGORICAL series
+     is not a STATE: series 2 does not mean "good", it means "the second thing".
+     Borrowing the semantic palette fuses two vocabularies, so a reader who has
+     learned that red is a failure meets a red that means "Solar".
+
+     Five hues chosen to be told apart, each clearing 3:1 against both light
+     surfaces — the floor for a graphical object that carries meaning. A chart
+     no longer follows `data-brand`, for the same reason the map's scale does
+     not: a scale has to mean the same thing in all three brands.
+
+     Five is the cap. A sixth series is a chart that should be a table.
+
+     `--chart-3` IS NOT A STALE COPY OF ROOF'S INK, which is what it will look
+     like from now on: #B84A19 was `--accent-ink-light` under `roof` until the
+     ink was repicked against its own washes on 2026-08-25, and this value
+     deliberately did not move with it. A series colour is picked to be told
+     apart from the other four at a 3:1 floor, not to be legible as text on a
+     wash of itself, and a chart does not follow `data-brand` at all. Two
+     values that were once the same hex, answering two different questions. */
+  --chart-1: #036B4E; /* 5.64:1 on the card */
+  --chart-2: #0B63CE; /* 4.91 */
+  --chart-3: #B84A19; /* 4.50 */
+  --chart-4: #8A5A00; /* 5.12 */
+  --chart-5: #4A5568; /* 6.50 */
+
+  /* ── The grid is SCAFFOLDING, and it is held to a lower bar ON PURPOSE ─────
+     It used to be `var(--border)` — 1.35:1 on the page, which is not a faint
+     line, it is an absent one. This is #BAB2A5, 1.90:1 on the card.
+     Still under 3:1, and that is the decision, not an oversight: a grid line
+     at 3:1 is as loud as the series drawn over it, and the thing the reader is
+     meant to read is the data. 1.4.11 asks for 3:1 on a graphical object
+     "required to understand the content" — the axis ticks carry every value
+     (5.65:1 light, 7.00:1 dark, measured), so the grid is not required for
+     that; it only makes the ticks easier to follow across.
+     If a line ever has to be READ — a target, a threshold, a reference — it is
+     `grid.referenceLine`, which points at `--input` and clears 3:1. */
+  --chart-grid: #bab2a5;
+
+}
+
+[data-theme="dark"] {
+  /* Theme-invariant roles are restated so a dark subtree owns the contract. */
+  --scrim: rgb(0 0 0 / 0.5);
+  --rating-star: var(--color-traffic-yellow);
+
+  /* NO `--background` LINE HERE, and its absence is the point. shadcn's
+     `--background` and the page surface this system used to call
+     `-​-surface-page` were two names for one value. 6.0.0 gave
+     the design-system name Carbon's spelling, which is the word shadcn was
+     already using, so the alias that used to sit on this line would now read
+     `--background: var(--background)` — a self-reference that resolves to
+     nothing and paints an unstyled page. `themes.css` declares it directly, per
+     theme, and that is the only declaration anywhere. The same trap is recorded
+     at the `@theme` block below. */
+  --foreground: var(--text-primary);
+  --card: var(--layer-01);
+  --card-foreground: var(--text-primary);
+  --popover: var(--layer-01);
+  --popover-foreground: var(--text-primary);
+
+  /* Same decision as light, and the same two tokens express it: in dark
+     `--accent-ink` is the LIFTED accent — emerald-light on iq, #3DAEFE on rei,
+     #FF8450 on roof — so the filled button flips to ink-on-brand on its own and
+     reads 8.85 / 7.04 / 7.02:1. See the light block for the full table.
+     It used to be the raw accent and read 8.85 / 5.46 / 5.85; the lift is
+     argued at `--accent-ink` below and the CTA only inherits it. */
+  --primary: var(--accent-ink);
+  --primary-foreground: var(--text-inverse);
+  /* Slate step 5 since 6.1.0 — the "active component" rung, 1.22:1 off the
+     card and 1.35 off the page; `--text-secondary` reads 6.28 on it. */
+  --secondary: var(--color-slate-5);
+  --secondary-foreground: var(--text-primary);
+
+  --muted: var(--color-slate-5);
+  --muted-foreground: var(--text-secondary);
+  /* One hover identity, both themes — see the light block. */
+  --accent: rgba(var(--interactive-rgb), 0.12);
+  /* One wash identity, every theme and every subtree — see the light block. */
+  --accent-strong: rgba(var(--interactive-rgb), 0.22);
+  --accent-foreground: var(--text-primary);
+  /* The accent as a FOREGROUND — text, an icon, a small fill. It resolves to
+     `--accent-ink`, the contrast-picked value, NOT to the display accent: the
+     raw accent as text is 2.5 to 2.9:1 in all three brands. The display value
+     is still reachable as `--interactive-text` for large type, where 3:1
+     applies. Named `fg` because that is what it is. */
+  --accent-fg: var(--accent-ink);
+
+  /* ── THE DARK DESTRUCTIVE, AND THE TWO FAILURES IT USED TO CARRY ──────────
+     It was `var(--color-danger)` (#FF5F57) paired with white, and both halves
+     of that failed, measured by sampling painted pixels:
+
+                                             was      now
+       white/ink on the fill (button, badge)  2.99    7.08   <- text on a fill
+       the red as text on the card           4.66    5.80
+       the red on its own 12% hover wash     4.00    4.76   <- the row you are
+                                                               about to click
+       (on the slate card since 6.1.0: 6.62 as text, 5.41 on the wash)
+
+     THE HOVER MADE IT HARDER TO READ, which is backwards independent of any
+     threshold: hover exists to confirm "this is the thing you are about to
+     click", and one that degrades legibility is the affordance working against
+     itself. That is why this could not be fixed in the wash. A translucent red
+     over a DARK surface lightens it toward the red; there is no red-tinted wash
+     that darkens, because every red in the palette has more luminance than
+     #2C2C2E — measured #A4231C at 20-60%, all of them lighten. Darkening with
+     black would change the STRENGTH of the hover rather than its hue, which is
+     the one thing `--support-error-wash` above forbids.
+
+     So the ink moved, and it moved in the direction the components already
+     assumed. `badge.tsx` has said for months that "dark destructive is a LIGHT
+     red whose pair is ink" — the token said white, and the comment was the one
+     telling the truth about the intent.
+
+     DECOUPLED FROM `--color-danger` ON PURPOSE. That token is also a MAP FILL
+     (see the note above and `choropleth-map.tsx`); pointing this at a literal
+     leaves the map's red band exactly where it was. Light theme is untouched:
+     #A4231C there is 6.68 on the card and 5.48 on its wash, with room to spare.
+
+     Brand-owner decision, taken 2026-08-20 with the numbers above on the table. */
+  --support-error: #ff827c;
+  --support-error-foreground: var(--color-gray-1);
+  /* Same recipe as light, re-derived here against dark's destructive ink. */
+  --support-error-wash: color-mix(in srgb, var(--support-error) 12%, transparent);
+  --support-success: var(--color-emerald-light);
+  --support-success-foreground: var(--color-gray-1);
+  /* ── DARK GOT THE SAME AUDIT, AND IT WAS EXEMPTED BY A SENTENCE ───────────
+     `13-contrast.md` said "dark mode keeps the raw accent, which already
+     clears it on titanium", so this token was the raw accent in two of three
+     brands and nothing ever measured it. It does not clear titanium. Sky
+     #0495FE is 4.47 on `--layer-01` #2C2C2E — under the floor by 0.03,
+     which is the failure a human review cannot see and a gate can — and 3.64
+     on titanium-mid #3A3A3C, which is `--muted` and `--secondary`, the fill a
+     table puts behind a row. Orange #FF6723 is 4.79 and 3.90. Only
+     emerald-light was ever past both, which is why `iq` is untouched.
+
+     The lift is the mirror of light's darkening — same hue, same saturation,
+     lightness moved until titanium-mid clears, and no further, because a
+     paler sky stops being sky:
+
+       iq   #34D399  charcoal 9.22  titanium 7.25  titanium-mid 5.90
+       rei  #3DAEFE           7.33           5.76               4.69
+       roof #FF8450           7.31           5.75               4.68
+
+     Titanium-mid is the binding surface and it dominates both accent washes
+     the toggle paints in dark: at these values `--accent` reads 4.95 / 4.90
+     and its `/70` hover rung 5.19 / 5.16, so the control that exposed this in
+     light is covered in dark by the same move.
+
+     A LIFT ONLY HELPS THE OTHER JOB. `--primary` is this token and its label
+     is `--text-inverse` #1C1C1E, so the dark CTA went from 5.46 / 5.85 to
+     7.04 / 7.02 as a side effect — the two halves pull the same way here,
+     unlike light, where darkening the ink is what the cream label needs too.
+
+     STILL SHORT, AND STATED RATHER THAN HIDDEN: `--accent-strong`, the 22%
+     rung, reads 4.28 on rei and 4.21 on roof under this ink. Its declared
+     pair is `--accent-foreground` — `--text-primary`, which measures 9.33 and
+     9.20 on it — and nothing in the registry paints accent ink on that wash.
+     Closing it would need roughly another eight points of lightness, at which
+     point sky is a pale blue and orange is a salmon. Worth a brand-owner
+     decision, not a developer's.
+
+     6.1.0 (2026-09-08) MOVED THE SURFACES, NOT THE INK. On the Radix Slate
+     ramp the card is #212225 and muted is #2E3135, both darker than the
+     titaniums they replace, so every row above reads higher — page 9.15 /
+     7.27 / 7.26, card 8.27 / 6.58 / 6.57, muted 6.80 / 5.40 / 5.39 — and the
+     22% rung that was short now clears: 5.69 on iq, 4.80 on rei, 4.75 on roof,
+     with `--text-primary` at 9.42 / 10.01 / 9.91 over it. The 12% rung reads
+     6.85 / 5.62 / 5.59. The lift is still needed: raw sky is 4.19 on muted and
+     raw orange 4.49, both under 4.5, and a paler sky is still not sky. */
+  --accent-ink: var(--accent-ink-dark);    /* per brand — see ds/themes.css */
+  --support-warning: var(--color-traffic-yellow);
+  --support-warning-foreground: var(--color-gray-1);
+  /* The vivid half of the pair argued in the light block: #A78BFA under ink is
+     6.25:1, and 5.85:1 as text on the slate card (5.12 on titanium, until
+     6.1.0). NOT derived from #6D28D9 with a
+     `color-mix` — a fill that carries a label has to be picked against THAT
+     label, and dark puts the opposite ink on it. Two measurements, two values. */
+  --magic: #a78bfa;
+  --magic-foreground: var(--text-inverse);
+
+  --border: var(--border-subtle-01);
+  --border-strong: var(--border-strong-01);
+  /* Slate step 9: 3.43:1 on the page, 3.10:1 on the card — see the light
+     block for the floor. Step 8 (#5A6169) is the scale's "strong border" and
+     it misses, 2.81 and 2.54, which is why it is not declared. Before 6.1.0
+     this was a hand-tuned #767679 at 3.91 / 3.08; before that the old
+     `--color-titanium-light` at 1.94 and 1.53. */
+  --input: var(--color-slate-9);
+  /* Dark already cleared the floor at 6.94:1, so the display accent stays: the
+     ring is the brand where the brand is legible, and ink only where it is
+     not. */
+  --focus: var(--interactive);
+
+  /* The same two jobs and the same 1.29:1 floor, on slate steps 7 and 6: 1.91
+     page · 1.72 card at rest, 1.54 · 1.39 at the far end. The hand-tuned pair
+     before 6.1.0 was #4C4C4E / #3E3E40 (1.63 and 1.31 on the titanium card);
+     before that #313134 / #3D3D41 — 1.07:1 on a card AT REST, so the dark
+     theme's skeleton WAS the card until it pulsed, and it never pulsed. Rest
+     is the stronger end here too; see the light block for why that is the
+     half reduced motion lands on. */
+  --skeleton: var(--color-slate-7);
+  --skeleton-pulse: var(--color-slate-6);
+
+  --row: var(--layer-01);
+  /* Halfway from the row back to the page — #1D1D20 as Chrome paints it,
+     1.06:1 off the row, the same step #29292B held against titanium. The zebra
+     goes DOWN the ramp in both themes; it is the header band that goes up. The
+     scale has no rung between 2 and 3, so this is a recipe, like `--row-hover`
+     below. */
+  --row-alt: color-mix(in srgb, var(--color-slate-2) 50%, var(--color-slate-3));
+  /* Identical expression to the light block on purpose: `--layer-01` is
+     what carries the theme, so one decision covers both. See there for why it
+     must stay opaque. */
+  --row-hover: color-mix(in srgb, var(--interactive) 12%, var(--layer-01));
+  --row-selected: var(--color-slate-6); /* 1.39:1 off the row; #434346 was 1.41 */
+  /* ON DARK THE BAND STEPS UP, and this is the half that was actually broken.
+     `--color-charcoal-deep` is the darkest value the system publishes and the
+     one `--surface-sunken` already spends, so a header inside a titanium card
+     was a hole punched through to the ground floor: 1.37:1 off its own row and
+     DARKER than the page behind the card. That is not a band, and white at
+     17.28:1 on near-black is the classic dark-mode glare case besides.
+
+     So it goes the other way. `--color-titanium-mid` is ramp step 3, the step
+     ABOVE the card, which is what a header on dark is supposed to be. The rule
+     is not "the band is dark", it is THE BAND STEPS AWAY FROM ITS ROW — down
+     the ramp on cream, up it on charcoal. Nothing else moves: the ink is still
+     `--row-header-foreground`, so the inverse-ink escape TableHeader and
+     TableFooter close (table.tsx) is untouched. Warm white 10.24:1, white-40
+     glyphs 3.25:1 over the 3:1 floor, band off the row 1.23:1 and off the page
+     1.56:1 — where it used to be 1.08:1 and on the wrong side.
+
+     ON THE SLATE RAMP (6.1.0) the same rule lands on step 5, with step 12 as
+     the ink: 11.26:1 for words, helper glyphs 3.08 over the 3:1 floor, band off
+     the row 1.22 and off the page 1.35. Still up, still a band. */
+  --row-header: var(--color-slate-5);
+  --row-header-foreground: var(--color-slate-12);
+
+  /* The recessed rail, dark side. `--color-charcoal` here was the identical hex
+     to `--background`, so rail and panel were one surface at 1.00:1 — see the
+     light block. `--surface-sunken` is the DS's own bottom stop of the ramp,
+     which is exactly what a ground under a floating panel should be. */
+  --sidebar: var(--surface-sunken);
+  --sidebar-foreground: var(--text-primary);
+  /* The rail's filled control follows `--primary`, for the same reason and
+     with the same numbers. Leaving it on ink would have made the one screen
+     with a sidebar the one screen where the CTA is not the brand. */
+  --sidebar-primary: var(--accent-ink);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent: rgba(var(--interactive-rgb), 0.12);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-strong-01);
+  --sidebar-ring: var(--interactive);
+
+  /* Charcoal swallows the light card shadow, so resting cards use the deeper
+     dark recipe from themes.css. An overlay still needs a stronger step above
+     the page, so both overlay roles keep the modal elevation. */
+  --elevation-overlay: var(--shadow-modal);
+  --elevation-modal: var(--shadow-modal);
+  /* The old `dark:ring-white/10` optical edge, named by overlay role; slate-a4
+     since 6.1.0, 1.37:1 on the panel it rings. */
+  --overlay-ring: var(--color-slate-a4);
+  /* ── Chart series ──────────────────────────────────────────────────────────
+     Five is the cap. A sixth series is a chart that should be a table. */
+  /* The same five hues, lifted for the dark ramp. Measured against the card
+     (#212225), the lightest of the three resting surfaces and so the lowest
+     ratio of the three. */
+  --chart-1: #34D399; /* 8.27:1 */
+  --chart-2: #0495FE; /* 5.10 */
+  --chart-3: #FF6723; /* 5.47 */
+  --chart-4: #FEBC2E; /* 9.43 */
+  --chart-5: #A0AEC0; /* 7.05 */
+
+  /* Dark's grid was rgba(255,255,255,0.08) = 1.25:1. Same reasoning as light. */
+  --chart-grid: rgba(255, 255, 255, 0.16);
+
+}
+
+/* ── A BRAND ON A SUBTREE, AND WHY IT NEEDED THESE SIXTEEN LINES ──────────────
+ *
+ * `index.css` says `data-theme` and `data-brand` "both work on any subtree".
+ * Half of that was false, and it was false for everything a component actually
+ * consumes. Measured on a `data-brand="roof"` div inside an `iq` page:
+ *
+ *   --interactive        #10b981 -> #ff6723   followed
+ *   --accent-ink-light    #036b4e -> #b84a19   followed
+ *   --interactive-rgb    16,185,129 -> 255,103,35  followed
+ *   --accent-ink          #036b4e -> #036b4e   DID NOT
+ *   --primary             #10b981 -> #10b981   DID NOT
+ *   --accent              rgba(16,185,129,.12) unchanged   DID NOT
+ *   --focus, --sidebar-*   #036b4e -> #036b4e   DID NOT
+ *
+ * The INPUTS follow and every DERIVED token does not, which is the worst of the
+ * three possible outcomes: a branded section changes some of its colours and
+ * keeps the rest, so it reads as a rendering fault rather than as a brand.
+ *
+ * WHY. Custom-property substitution happens on the element where the property
+ * is DECLARED. `--accent-ink: var(--accent-ink-light)` is declared up there on
+ * `:root`, so it resolves there, against the ROOT's `--accent-ink-light`, and
+ * descendants inherit the finished colour. A subtree setting
+ * `--accent-ink-light` is writing an input that nothing reads a second time.
+ * Theme survives a subtree only because the `[data-theme]` blocks REDECLARE the
+ * derived tokens; the `[data-brand]` blocks in `themes.css` set inputs alone.
+ * That asymmetry is the entire bug, and it is why the fix belongs here rather
+ * than in `themes.css`: the derivation lives in this file, so its repetition
+ * has to as well.
+ *
+ * FIVE RULES, AND THE ORDER IS THE WHOLE THING. Every one of the last four is
+ * (0,2,0), so source order decides between them, and it is arranged so that
+ * A THEME AN ELEMENT DECLARES ON ITSELF ALWAYS BEATS ONE IT INHERITS:
+ *
+ *   1  [data-brand]                       (0,1,0)  the theme-independent half,
+ *                                                  plus a light default
+ *   2  [data-theme="dark"]  [data-brand]  (0,2,0)  theme from an ancestor
+ *   3  [data-theme="light"] [data-brand]  (0,2,0)
+ *   4  [data-theme="dark"] [data-brand]   (0,2,0)  theme on the element ITSELF,
+ *   5  [data-theme="light"][data-brand]   (0,2,0)  last, so it wins the tie
+ *
+ * Rule 1 must come after the `[data-theme="light"]` block above, which is the
+ * same (0,1,0), to win on the root element — where it computes identical values
+ * anyway, since the root's inputs are the root brand's.
+ *
+ * 4 AND 5 ARE NOT REDUNDANT WITH 2 AND 3, and leaving them out is a bug I
+ * shipped for one iteration. `<div data-theme="dark" data-brand="roof">` inside
+ * a light page matches rule 3 — the page IS a light ancestor and the div DOES
+ * carry a brand — so without rule 4 the div took roof's LIGHT ink (#b84a19)
+ * while declaring itself dark. Measured. The same-element compounds are also
+ * what catch `<html data-theme="dark" data-brand="iq">`, which carries both
+ * attributes on one element and therefore matches no descendant selector at all.
+ *
+ * THE ONE NESTING THIS DOES NOT SOLVE, stated rather than hidden: a brand
+ * subtree under a dark subtree under a LIGHT root matches rules 2 and 3 at
+ * equal weight, and source order hands it to light. CSS has no "nearest
+ * ancestor wins" combinator, so the fix there is to put the brand on the same
+ * element as the theme, which rules 4 and 5 then resolve exactly.
+ */
+[data-brand] {
+  --interactive-text: var(--accent-text-light);
+  --accent: rgba(var(--interactive-rgb), 0.12);
+  /* One wash identity, every theme and every subtree — see the light block. */
+  --accent-strong: rgba(var(--interactive-rgb), 0.22);
+  /* The row highlight, for the same reason as everything else in this block: it
+     reads `--interactive`, so on a subtree it has to be resolved AGAIN or it
+     keeps the root's. No theme compound needed below — the expression takes its
+     ground from `--layer-01`, which the theme blocks already set. */
+  --row-hover: color-mix(in srgb, var(--interactive) 12%, var(--layer-01));
+  --accent-ink: var(--accent-ink-light);
+  --accent-fg: var(--accent-ink);
+  --focus: var(--accent-ink);
+  --sidebar-accent: rgba(var(--interactive-rgb), 0.12);
+  --sidebar-ring: var(--accent-ink);
+
+  /* AND `--primary` / `--sidebar-primary` ARE BACK, BECAUSE THEY READ THE
+   * ACCENT AGAIN. The CTA fill is `--accent-ink` (see the `:root` block), and
+   * `--accent-ink` is per-brand — so on a brand subtree it has to be re-resolved
+   * here for the same reason as every other line above it, or the root brand's
+   * green sticks to a Roof section.
+   *
+   * THIS IS THE LINE 0.6.0 GOT WRONG, in the opposite direction, and it is
+   * worth keeping the story. That release moved `--primary` to ink at `:root`
+   * and in the dark block, and left the accent declaration sitting HERE.
+   * `[data-brand]` is the same specificity as `:root` and comes four hundred
+   * lines later, so it won on every screen in the platform — the shell always
+   * sets the brand attribute. The release shipped, was documented with its
+   * numbers, and never took effect anywhere: measured on the deployed site on
+   * 21 Aug 2026, the primary button painted warm white on emerald at 2.39:1.
+   *
+   * Nothing in the repository saw it, and the reason is the durable part: every
+   * contrast check we have reads DECLARATIONS, and the declaration at `:root`
+   * was correct the whole time. Only a painted pixel could tell. Which is why
+   * these two lines are now written in BOTH places and in all four theme
+   * compounds below — a derived token that is declared once is declared for the
+   * root brand only. */
+  --primary: var(--accent-ink);
+  --sidebar-primary: var(--accent-ink);
+}
+
+/* Theme inherited from an ancestor. */
+[data-theme="dark"] [data-brand] {
+  --interactive-text: var(--accent-text-dark);
+  --accent-ink: var(--accent-ink-dark);
+  --accent-fg: var(--accent-ink);
+  --primary: var(--accent-ink);
+  --sidebar-primary: var(--accent-ink);
+  /* Dark keeps the DISPLAY accent for the ring: it already clears the floor at
+     6.98:1 there, so the ring is the brand where the brand is legible. This is
+     a repetition of the dark block above, not a new decision. */
+  --focus: var(--interactive);
+  --sidebar-ring: var(--interactive);
+}
+[data-theme="light"] [data-brand] {
+  --interactive-text: var(--accent-text-light);
+  --accent-ink: var(--accent-ink-light);
+  --accent-fg: var(--accent-ink);
+  --primary: var(--accent-ink);
+  --sidebar-primary: var(--accent-ink);
+  --focus: var(--accent-ink);
+  --sidebar-ring: var(--accent-ink);
+}
+
+/* Theme declared on the element itself. Last, so it outranks an inherited one. */
+[data-theme="dark"][data-brand] {
+  --interactive-text: var(--accent-text-dark);
+  --accent-ink: var(--accent-ink-dark);
+  --accent-fg: var(--accent-ink);
+  --primary: var(--accent-ink);
+  --sidebar-primary: var(--accent-ink);
+  --focus: var(--interactive);
+  --sidebar-ring: var(--interactive);
+}
+[data-theme="light"][data-brand] {
+  --interactive-text: var(--accent-text-light);
+  --accent-ink: var(--accent-ink-light);
+  --accent-fg: var(--accent-ink);
+  --primary: var(--accent-ink);
+  --sidebar-primary: var(--accent-ink);
+  --focus: var(--accent-ink);
+  --sidebar-ring: var(--accent-ink);
+}
+
+/* ── Tailwind bridge ─────────────────────────────────────────────────────── */
+@theme inline {
+  /* THE ONE MOTION VALUE STILL OFF THE SCALE WAS THE DEFAULT ITSELF. Tailwind's
+     factory ships `--default-transition-duration: 150ms` on
+     `cubic-bezier(0.4, 0, 0.2, 1)`, and neither number is on this system's
+     rung — so every bare `transition-*` in the tree, about ninety-three of
+     them, animated on a duration and a curve the system never chose. e6dd1bc
+     recorded leaving that alone as an owner call ("the 150ms transition
+     default", left on the table); the 2026-08-25 laws-of-ux refactor mandate
+     reverses the deferral. What gave way in the old argument is the idea that
+     a value nobody wrote is a decision nobody made — it was a decision, made
+     by omission, and remade by every new component that wrote
+     `transition-colors` and stopped there.
+
+     The two lines below keep a bare `transition-*` ON scale; they do not pick
+     its rung. `fast` is the rung for a change in place (colour, opacity, a
+     ring), so anything that MOVES still names `duration-(--duration-base)` or
+     `duration-(--duration-slow)` — the rung rule and the three declarations
+     live at the scale's own comment in `spacing.css`. */
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--ease-standard);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  /* `animate-disclosure-down` / `-up`. Both read `--duration-slow` and
+     `--ease-standard`, because a disclosure is a LARGE layout change — see the
+     rung rule at the scale's own declaration in `spacing.css`, and the
+     keyframes below.
+
+     THIS COMMENT SAID `--duration-base` AND "ARRIVE TOGETHER" FOR ONE RELEASE,
+     which is the shape this repository keeps having to catch: the values moved
+     to `slow` and the sentence describing why they were `base` stayed. It
+     shipped that way in 0.8.0 and a reader of the published `tokens.css` got a
+     comment contradicting the line under it. Arriving together was the thing
+     that turned out to be WRONG — a shared finish line means the longer
+     distance travels faster, and at 180ms the rail's list moved 3.8x faster
+     than the rail. */
+  --animate-disclosure-down: disclosure-down var(--duration-slow) var(--ease-standard);
+  --animate-disclosure-up: disclosure-up var(--duration-slow) var(--ease-standard);
+
+  /* `animate-magic-sweep` — the sheen on a button that does something the
+     reader could not have done by hand. Reads `--duration-ambient` and NOT one
+     of the three transition steps: it is a loop with no destination, which is
+     the argument written where that token is declared. Linear rather than
+     `--ease-standard`, and it is the one place in the system that is: an eased
+     loop accelerates and decelerates at the seam, so a sweep that restarts
+     forever visibly stutters once per cycle. A curve is for a journey with two
+     ends. See the keyframe below.
+
+     IT SAID "THE ONE PLACE IN THE SYSTEM THAT IS" until `--animate-skeleton-
+     pulse` joined it directly below, on the same argument. There are two
+     loops with no destination now, and both are linear. */
+  --animate-magic-sweep: magic-sweep var(--duration-ambient) linear infinite;
+
+  /* `animate-skeleton-pulse` — the loading placeholder breathing, and the
+     reason it is a TOKEN rather than five words typed at the call site.
+     `skeleton.tsx` carried `animate-[skeleton-pulse_2s_ease-in-out_infinite]`
+     for its whole life and the keyframes it names were never written; an
+     arbitrary animation utility cannot tell you that, because a name with
+     nothing behind it is legal CSS. A `--animate-*` entry cannot fail that way
+     — the keyframes ship in this same file, so a consumer who installs the
+     tokens installs the movement, and the gate in `tools/tests/tokens.test.mjs`
+     now refuses any animation name the package does not declare.
+
+     `--duration-ambient` and `linear`, on the argument directly above: this is
+     the second loop with no destination, and an eased ping-pong accelerates
+     out of the value it has just eased into, so the seam kicks once per cycle
+     forever. 2.4s there and back is a breath; the `2s` it used to ask for was
+     a literal in a class name, which is the thing `--duration-*` exists to
+     stop. */
+  --animate-skeleton-pulse: skeleton-pulse var(--duration-ambient) linear infinite;
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-fg: var(--accent-fg);
+  --color-card-divider: var(--card-divider);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-support-error: var(--support-error);
+  --color-support-error-foreground: var(--support-error-foreground);
+  --color-support-error-wash: var(--support-error-wash);
+  --color-support-success: var(--support-success);
+  --color-support-success-foreground: var(--support-success-foreground);
+  --color-support-warning: var(--support-warning);
+  --color-support-warning-foreground: var(--support-warning-foreground);
+  --color-magic: var(--magic);
+  --color-magic-foreground: var(--magic-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-focus: var(--focus);
+  --color-skeleton: var(--skeleton);
+  --color-skeleton-pulse: var(--skeleton-pulse);
+  --color-row: var(--row);
+  --color-row-alt: var(--row-alt);
+  --color-row-hover: var(--row-hover);
+  --color-row-selected: var(--row-selected);
+  --color-row-header: var(--row-header);
+  --color-row-header-foreground: var(--row-header-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-interactive: var(--interactive);
+
+  /* NEITHER OF THESE IS A SELF-REFERENCE ANY MORE, and the note further down
+     about `--border-radius-16: var(--border-radius-16)` is now true of this block too.
+     Until 2026-08-30 the file forbade the form and then used it twice, on
+     `--font-display` and `--font-mono`. Both resolved only because
+     `typography.css` is unlayered. `--font-display` is gone with DM Sans, and
+     the mono token is named `--font-identifier` at source, so these two lines
+     point at something other than themselves and would survive being layered. */
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-identifier);
+
+  /* The role scale, named after its job. Every tier is Inter — `display` is a
+     size and a weight, not a face, and `data` is Inter with tabular figures.
+
+     `hero` is the top of the scale and the one tier a screen gets at most one
+     of — the sign-in wordmark's neighbour, the 404's numeral. It existed as a
+     role token (`--type-hero-size`, section 08) with no utility bound to it,
+     so every screen that wanted it reached for `text-stat` and landed 30px
+     short. */
+  --text-hero: var(--type-hero-size);
+  --text-hero--line-height: var(--type-hero-lh);
+  --text-display: var(--type-h3-size);
+  --text-display--line-height: var(--type-h3-lh);
+  --text-section: 17px;
+  --text-section--line-height: 1.3;
+  --text-body: var(--type-body-sm-size);
+  --text-body--line-height: 1.6;
+  --text-caption: var(--type-caption-size);
+  --text-caption--line-height: var(--type-caption-lh);
+  --text-data: var(--type-data-size);
+  --text-data--line-height: 1.3;
+  --text-eyebrow: var(--type-eyebrow-size);
+  --text-eyebrow--line-height: 1.3;
+  --text-stat: 34px;
+  --text-stat--line-height: 1;
+
+  /* Radius and easing are NOT restated here. They already exist as DS tokens,
+     and re-declaring `--border-radius-16: var(--border-radius-16)` inside @theme is a
+     self-reference that resolves to nothing. Components reach them as
+     `rounded-[var(--border-radius-16)]`, and `shadow-[var(--shadow-card)]` works
+     the same way — arbitrary syntax reads the `:root` var directly.
+
+     The two ELEVATIONS below are the exception, because a bare utility cannot.
+     Tailwind only mints `shadow-*` from a `--shadow-*` key declared HERE; a DS
+     token sitting on `:root` is invisible to it. All six vendored overlays —
+     dialog, sheet, popover, tooltip, select, dropdown-menu — ask for
+     `shadow-overlay` or `shadow-modal`, and until these two lines existed both
+     compiled to nothing and every overlay rendered flat against the page,
+     which is the one job the system reserves elevation for.
+
+     They point at `--elevation-*`, not at `--shadow-*`, because
+     `--shadow-modal: var(--shadow-modal)` here is that same self-reference trap
+     one indirection later.
+
+     THE INDIRECTION MOVES THE LOOP RATHER THAN BREAKING IT, and that is worth
+     knowing before anything about import order changes. `--elevation-modal`
+     (:437 and :677) reads `--shadow-modal` straight back, so the chain closes
+     on itself across two files, and it survives for exactly the reason
+     `--font-mono` did: `spacing.css` is unlayered, unlayered CSS beats the
+     `@layer theme` `:root` this block emits into, and `--elevation-modal`
+     therefore resolves to the raw value spacing.css:57 declares. Put
+     `spacing.css` in a layer and the cycle becomes invalid — `shadow-modal`
+     compiles to nothing again, and in dark so does `shadow-overlay`, because
+     `--elevation-overlay` (:676) reads `--shadow-modal` too. The fix is not
+     here: it is a raw key in `spacing.css` that this block does not re-mint,
+     the shape `--shadow-card-hover` already has, which is why
+     `--shadow-overlay` below needs no change.
+
+     The resting card is untouched and stays flat: it separates with a line, on
+     purpose. */
+  --shadow-overlay: var(--elevation-overlay);
+  --shadow-modal: var(--elevation-modal);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  /* The CANVAS, not just the body.
+     A rubber-band scroll past the top or bottom edge exposes the canvas, and the
+     canvas only inherits the body's background while <html>'s own is transparent
+     — a fragile contract to lean on, and it was losing: the overscroll gutter
+     came out #FFF while the page was cream, so pulling the page down flashed
+     white above a cream document. Painting <html> explicitly makes the
+     out-of-range area the page colour in both themes instead of the browser
+     default. `color-scheme` (set per theme in the DS layer) keeps the scrollbars
+     matching it. */
+  html {
+    background: var(--background);
+  }
+
+  /*
+   * AND THE SCROLLBAR MATCHES THE CHROME, NOT THE PLATFORM.
+   *
+   * `color-scheme` only tells the browser which of ITS two scrollbars to draw,
+   * and both of them are a 15px bar with a painted track — a grey column
+   * standing beside a cream page, drawn at the weight of a piece of layout. The
+   * sidebar is where it shows worst, because the panel IS the scroll port: the
+   * bar lands inside the rounded inset, on `--sidebar`, next to the nav.
+   *
+   * Thin, no track, and a thumb that is a tint of the page's own ink puts it
+   * back where chrome belongs — visible when a reader looks for it, gone when
+   * they are reading. Both properties INHERIT, so this one declaration at the
+   * root reaches every scroll port in the app: the sidebar panel, the sticky
+   * table viewport, dropdown and select menus, the record sheet, the filter
+   * rail. No component opts in and none can forget to.
+   *
+   * The legacy pseudo-elements sit behind `@supports not`, NOT beside these two
+   * lines, and that is deliberate: Chrome ignores every `::-webkit-scrollbar-*`
+   * rule on an element that also sets `scrollbar-width` or `scrollbar-color`.
+   * Declaring both is not belt-and-braces — it is one of them silently winning
+   * and the other being dead CSS that still has to be maintained.
+   */
+  :root {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  /* Safari before 18.2, Chrome before 121, and every WebKit shell pinned behind
+     them. Same mark, built the old way: 12px of box holding a 4px thumb, the
+     difference being a transparent border the pointer can still grab — so the
+     mark stays a hairline while the target stays a target. `background-clip`
+     is what makes the border read as padding instead of as more thumb. */
+  @supports not (scrollbar-width: thin) {
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-thumb);
+      background-clip: padding-box;
+      border: 4px solid transparent;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--scrollbar-thumb-hover);
+    }
+    /* The stepper arrows are a Windows-only relic and a second hit target for
+       an action the wheel already does. */
+    ::-webkit-scrollbar-button {
+      display: none;
+    }
+  }
+
+  /*
+   * THE DOCUMENT PAINTS WHAT THE FRAME PAINTS.
+   *
+   * An inset shell wraps the whole window in `--sidebar` and floats the page
+   * inside it — so the colour a reader sees at the EDGES is the frame's, while
+   * the document behind it was still `--background`. Nothing covers that
+   * document until you overscroll, and then it is all you see: measured
+   * 2026-08-20, #FAF8F5 appearing behind a #F1EEE8 page in light, #18181B
+   * behind #0F0F11 in dark. Bounce up, bounce down, rubber-band sideways on a
+   * trackpad — four directions, one wrong colour.
+   *
+   * The fix is the document, not the bounce. `overscroll-behavior: none` would
+   * hide it by removing the gesture, which is a worse trade: the gesture is how
+   * a reader checks they are at the end of a list.
+   *
+   * `:has()` rather than a class the app has to remember, because the shell
+   * already declares what it is and a second declaration is a second thing to
+   * keep in step.
+   */
+  html:has([data-slot="sidebar-wrapper"] [data-variant="inset"]),
+  body:has([data-slot="sidebar-wrapper"] [data-variant="inset"]) {
+    background: var(--sidebar);
+  }
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* `--accent-strong`, not the expression it is made of: the 22% wash has a
+     name (:117, :522, :757) and that token's own comment cites this rule as the
+     copy it replaced. A selected row and a text selection are one gesture at
+     one strength, so they re-tune together or not at all. */
+  ::selection {
+    background: var(--accent-strong);
+  }
+  /* `--focus`, not `--interactive`: the two were separate declarations of one
+     thing, so the box-shadow rings on form controls and this outline could
+     disagree — and in light they did, because only one of them was fixed. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Every control says it is a control.
+     Tailwind v4's Preflight normalises a button's font, colour and border but
+     deliberately leaves `cursor` alone, and the UA default for <button> is
+     `default` — not `pointer`. Nothing in `buttonVariants` restored it, so no
+     Button variant, no Radix trigger and none of the eighteen scope-selector
+     items ever changed the cursor. It reads as a dead surface even when the
+     hover is working.
+     One rule here rather than `cursor-pointer` sprinkled across 24 primitives,
+     where the next generated component would just miss it again. `:disabled`
+     and `aria-disabled` are excluded so `disabled:cursor-not-allowed` still
+     wins on the controls that set it. */
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not(:disabled):not([aria-disabled="true"]),
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+}
+
+/* The system's label voice, and the fastest way to make a layout read as
+   8020IQ. Eyebrows, chrome labels, table column headers, stat captions.
+
+   IT WAS `.mono-caps` UNTIL 2026-08-30, and it was mono. The rename is not
+   tidying: the voice is CAPS AT TRACKING, and mono was never the part doing
+   the work. Carrying a face in the name is what let the same typeface mean
+   "label" here and "number" in the cell underneath, so a reader could not
+   tell which of the two a given run of mono was claiming to be. The caps and
+   the 0.08em survive intact; only the family changed, to the one family.
+
+   IT IS UNLAYERED, AND THAT IS THE WHOLE POINT (2026-08-24, views audit).
+
+   It used to sit in `@layer components` with everything below it, and there it
+   could not do its job. Tailwind's utilities are in `@layer utilities`, which
+   comes AFTER components in the cascade, so any primitive whose own recipe
+   carries type utilities beat it outright. `Badge` carries `font-sans
+   text-caption font-medium`; thirty-two call sites asked for the label voice on
+   a Badge and got the family, the size and the weight overruled. All that
+   survived was `text-transform` and `letter-spacing`, which no utility was
+   contesting — so the badge rendered 13px Inter in CAPS at label tracking, a
+   voice that exists nowhere else in the system.
+
+   `docs/02-typography.md:77` tells call sites to use "the raw `.label-caps`
+   class when it is inline in a cell or a badge". In a plain cell that worked.
+   In a Badge it never had. `toggle-group.tsx:102-125` hit the same wall and
+   solved it for itself by respelling the voice as utilities; doing that at
+   every call site means every component has to know about a cascade collision
+   it did not cause.
+
+   Unlayered CSS beats every layered rule, so this declaration now wins wherever
+   it is applied and the documentation is true. The cost is real and small: a
+   caller can no longer override the family, size or weight with a utility on
+   the same element. That is correct — `.label-caps` is a NAMED VOICE, not a
+   starting point, and something that needs a different size wants a different
+   tier, not this one bent.
+
+   `toggle-group.tsx:129` still spells the voice out as utilities in its own
+   recipe. That is now belt and braces rather than a workaround, and it is left
+   alone deliberately: it keeps the component self-contained, and importing a
+   preset to save one string would add a registry dependency to buy nothing. */
+.label-caps {
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--weight-emphasis);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label-caps);
+}
+
+@layer components {
+
+  /* Callouts are bracket corners: two 14px accent L-marks, no background, no
+     box border, and never a colored top or left border. The never/always rule
+     grid is the only exception in the whole system. */
+  .bracket {
+    position: relative;
+    padding: var(--space-5) var(--space-6);
+  }
+  .bracket::before,
+  .bracket::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--interactive);
+    border-style: solid;
+  }
+  .bracket::before {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+  }
+  .bracket::after {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+  }
+  .bracket[data-tone="danger"]::before,
+  .bracket[data-tone="danger"]::after {
+    border-color: var(--color-danger);
+  }
+}
+
+/* ── The map screen is a viewport application, not a scrolling document ──────
+   Every other route is a `Screen` (p-6 lg:p-8) that scrolls the document. The
+   map opts out BY ATTRIBUTE, so the shell does not have to know which route is
+   rendering and the route does not have to know how the shell is built.
+
+   The clamp has to be a definite height. `min-h-svh` on the sidebar wrapper is
+   a MINIMUM, and `overflow-hidden` on a descendant of an auto-height ancestor
+   clamps nothing — the document just grows and scrolls. Giving the wrapper and
+   the inset a real height is what turns the flex chain below them into a fixed
+   viewport that `flex-1 min-h-0` can divide.
+
+   `calc(100svh - 1rem)` on the inset, and the 1rem is not decoration: the
+   sidebar is `variant="inset"`, so the panel carries `m-2` — 8px of margin top
+   AND bottom. A plain `100svh` there overflows the viewport by exactly those two
+   margins and hands the map route back the scrollbar this block exists to
+   remove. It was `0.5rem` while the panel had `mt-0` and only a bottom margin;
+   the top gap is now real, so the subtraction doubled with it. If the variant
+   ever goes back to plain `sidebar`, this subtraction has to go with it or it
+   leaves a 16px dead strip instead.                                          */
+html:has([data-map-route]),
+body:has([data-map-route]) {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+[data-slot="sidebar-wrapper"]:has([data-map-route]) {
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+}
+[data-slot="sidebar-inset"]:has([data-map-route]) {
+  height: calc(100svh - 1rem);
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── A DISCLOSURE HAS A HEIGHT, AND IT HAS TO TRAVEL ─────────────────────────
+ *
+ * Radix's Collapsible and Accordion publish the measured height of their
+ * content as `--radix-collapsible-content-height` and expect the consumer to
+ * animate to it. Nothing here ever did, so every disclosure in the system
+ * appeared at full height in one frame. In the rail that is visible as a
+ * fault: the panel widens over `--duration-base` on an eased curve while the
+ * sub-list under the row it belongs to simply EXISTS, so one gesture reads as
+ * two unrelated events.
+ *
+ * KEYFRAMES, NOT A TRANSITION, and the reason is Radix rather than taste. A
+ * closing region is only in the DOM for as long as something is animating it:
+ * Radix waits for `animationend` and unmounts. A `transition` fires no such
+ * event, so the element leaves immediately and the close is instant however
+ * long the transition says it is. Only an `animation` gets the exit.
+ *
+ * These live in the token layer, not in a component's own CSS file, for the
+ * same reason `--ease-standard` does: the curve and the duration are published
+ * identity, and a consumer that installs one primitive should not have to
+ * remember a second import to make it move correctly. The
+ * `prefers-reduced-motion` block below already neutralises them — it collapses
+ * `animation-duration` as well as `transition-duration`, so a reader who asked
+ * for less motion gets the region with no travel and no extra rule here. */
+/* The sheen travels the full width of its host and a little past both edges, so
+   the highlight enters and leaves rather than fading up in place. The host
+   clips it — see `MAGIC` in `components/brand/devices`. */
+@keyframes magic-sweep {
+  from {
+    transform: translateX(-140%);
+  }
+  to {
+    transform: translateX(240%);
+  }
+}
+
+/* THE BREATH, AND IT ANIMATES background-COLOR RATHER THAN OPACITY. Tailwind's
+   own `animate-pulse` fades the element to 50% alpha, which puts the trough
+   halfway to whatever is behind it — a value nobody declared, nobody measured,
+   and that changes with the surface. Two declared colours can both be measured,
+   and they are, beside their declarations above.
+
+   `--skeleton` and `--skeleton-pulse` are read here as VARIABLES rather than
+   baked, which makes the pair the knob: an element that redeclares them on
+   itself moves both its fill and its breath together. That is how a skeleton
+   on an inverted surface stays on the band's own set — see the header bars in
+   `registry/components/ui/skeletons.tsx`. */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    background-color: var(--skeleton);
+  }
+  50% {
+    background-color: var(--skeleton-pulse);
+  }
+}
+
+@keyframes disclosure-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes disclosure-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
